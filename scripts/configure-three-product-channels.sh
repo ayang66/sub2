@@ -162,22 +162,24 @@ WHERE channel_id IN (
   UNION ALL SELECT full_channel_id FROM product_channel_ids
 );
 
--- GPT 5.6 prices preserve the NewAPI configuration, expressed per token.
+-- Official list prices, expressed per token.
 INSERT INTO channel_model_pricing (
   channel_id, platform, models, billing_mode,
   input_price, output_price, cache_write_price, cache_read_price
 )
-SELECT gpt_channel_id, 'openai', '["gpt-5.6-sol"]'::jsonb, 'token', 0.0000004, 0.0000004, 0.0000005, 0.00000004 FROM product_channel_ids
+SELECT gpt_channel_id, 'openai', '["gpt-5.6","gpt-5.6-sol"]'::jsonb, 'token', 0.000005, 0.000030, 0.00000625, 0.0000005 FROM product_channel_ids
 UNION ALL
-SELECT gpt_channel_id, 'openai', '["gpt-5.6-luna"]'::jsonb, 'token', 0.00000025, 0.00000025, 0.000000325, 0.000000025 FROM product_channel_ids
+SELECT gpt_channel_id, 'openai', '["gpt-5.6-terra"]'::jsonb, 'token', 0.0000025, 0.000015, 0.000003125, 0.00000025 FROM product_channel_ids
 UNION ALL
-SELECT gpt_channel_id, 'openai', '["gpt-5.6-terra"]'::jsonb, 'token', 0.000000125, 0.000000125, 0.00000016, 0.0000000125 FROM product_channel_ids
+SELECT gpt_channel_id, 'openai', '["gpt-5.6-luna"]'::jsonb, 'token', 0.000001, 0.000006, 0.00000125, 0.0000001 FROM product_channel_ids
 UNION ALL
-SELECT gpt_channel_id, 'openai', '["gpt-5.5"]'::jsonb, 'token', 0.0000003, 0.0000018, 0.000000375, 0.0000003 FROM product_channel_ids
+SELECT gpt_channel_id, 'openai', '["gpt-5.5"]'::jsonb, 'token', 0.000005, 0.000030, NULL, 0.0000005 FROM product_channel_ids
 UNION ALL
-SELECT gpt_channel_id, 'openai', '["gpt-5.4","gpt-5.4-mini"]'::jsonb, 'token', 0.0000005, 0.000003, 0.000000625, 0.0000005 FROM product_channel_ids
+SELECT gpt_channel_id, 'openai', '["gpt-5.4"]'::jsonb, 'token', 0.0000025, 0.000015, NULL, 0.00000025 FROM product_channel_ids
 UNION ALL
-SELECT gpt_channel_id, 'openai', '["gpt-5.3-codex-spark"]'::jsonb, 'token', 0.0000005, 0.000004, 0.000000625, 0.0000005 FROM product_channel_ids
+SELECT gpt_channel_id, 'openai', '["gpt-5.4-mini"]'::jsonb, 'token', 0.00000075, 0.0000045, NULL, 0.000000075 FROM product_channel_ids
+UNION ALL
+SELECT gpt_channel_id, 'openai', '["gpt-5.3-codex-spark"]'::jsonb, 'token', 0.00000175, 0.000014, NULL, 0.000000175 FROM product_channel_ids
 UNION ALL
 SELECT gpt_channel_id, 'openai', '["gpt-5.2","gpt-5.3","gpt-5.3-spark","codex-auto-review","gpt-oss-120b"]'::jsonb, 'token', NULL, NULL, NULL, NULL FROM product_channel_ids;
 
@@ -187,14 +189,14 @@ INSERT INTO channel_model_pricing (
 SELECT gpt_channel_id, 'openai', '["gpt-image-2","gpt-image-1.5"]'::jsonb, 'image', 0.04, 0.04
 FROM product_channel_ids;
 
--- Claude Kiro low-cost pricing.
+-- Claude official list pricing for the Kiro product channel.
 INSERT INTO channel_model_pricing (
   channel_id, platform, models, billing_mode,
   input_price, output_price, cache_write_price, cache_read_price
 )
-SELECT kiro_channel_id, 'anthropic', '["claude-opus-4-7","claude-opus-4-7-thinking"]'::jsonb, 'token', 0.0000006, 0.000003, 0.000000625, 0.0000005 FROM product_channel_ids
+SELECT kiro_channel_id, 'anthropic', '["claude-opus-4-7","claude-opus-4-7-thinking"]'::jsonb, 'token', 0.000005, 0.000025, 0.00000625, 0.0000005 FROM product_channel_ids
 UNION ALL
-SELECT kiro_channel_id, 'anthropic', '["claude-opus-4-8","claude-opus-4-8-thinking"]'::jsonb, 'token', 0.0000006, 0.000003, 0.000000725, 0.0000006 FROM product_channel_ids;
+SELECT kiro_channel_id, 'anthropic', '["claude-opus-4-8","claude-opus-4-8-thinking"]'::jsonb, 'token', 0.000005, 0.000025, 0.00000625, 0.0000005 FROM product_channel_ids;
 
 -- Claude full-price tier.
 INSERT INTO channel_model_pricing (
@@ -205,9 +207,9 @@ SELECT full_channel_id, 'anthropic', '["claude-opus-4-6","claude-opus-4-7","clau
 UNION ALL
 SELECT full_channel_id, 'anthropic', '["claude-sonnet-4-6"]'::jsonb, 'token', 0.000003, 0.000015, 0.00000375, 0.0000003 FROM product_channel_ids
 UNION ALL
-SELECT full_channel_id, 'anthropic', '["claude-fable-5"]'::jsonb, 'token', 0.00001, 0.00005, 0.0000125, 0.00001 FROM product_channel_ids
+SELECT full_channel_id, 'anthropic', '["claude-fable-5"]'::jsonb, 'token', 0.00001, 0.00005, 0.0000125, 0.000001 FROM product_channel_ids
 UNION ALL
-SELECT full_channel_id, 'anthropic', '["claude-sonnet-5"]'::jsonb, 'token', 0.000002, 0.00001, 0.0000025, 0.000002 FROM product_channel_ids;
+SELECT full_channel_id, 'anthropic', '["claude-sonnet-5"]'::jsonb, 'token', 0.000002, 0.00001, 0.0000025, 0.0000002 FROM product_channel_ids;
 
 COMMIT;
 SQL

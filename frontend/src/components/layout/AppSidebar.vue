@@ -702,7 +702,7 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
     { path: '/keys', label: t('nav.apiKeys'), icon: KeyIcon },
     { path: '/batch-image', label: t('nav.batchImage'), icon: BatchImageIcon, hideInSimpleMode: true, featureFlag: flagBatchImageAccess },
     { path: '/usage', label: t('nav.usage'), icon: ChartIcon, hideInSimpleMode: true },
-    { path: '/available-channels', label: t('nav.availableChannels'), icon: ChannelIcon },
+    { path: '/model-marketplace', label: t('nav.modelMarketplace'), icon: ChannelIcon },
     { path: '/monitor', label: t('nav.channelStatus'), icon: SignalIcon, featureFlag: flagChannelMonitor },
     { path: '/subscriptions', label: t('nav.mySubscriptions'), icon: CreditCardIcon, hideInSimpleMode: true },
     { path: '/purchase', label: t('nav.buySubscription'), icon: RechargeSubscriptionIcon, hideInSimpleMode: true, featureFlag: flagPayment },
@@ -717,6 +717,14 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
       iconSvg: item.icon_svg,
     })),
   )
+  if (authStore.isAdmin) {
+    const monitorIndex = items.findIndex((item) => item.path === '/monitor')
+    items.splice(Math.max(0, monitorIndex), 0, {
+      path: '/available-channels',
+      label: t('nav.availableChannels'),
+      icon: ChannelIcon,
+    })
+  }
   return items
 }
 

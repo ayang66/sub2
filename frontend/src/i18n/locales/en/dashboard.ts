@@ -502,6 +502,36 @@ export default {
     }
   },
 
+  modelMarketplace: {
+    title: 'Model Marketplace',
+    description: 'Browse available models, group multipliers, and effective pricing',
+    searchPlaceholder: 'Search models, groups, or channels',
+    allPlatforms: 'All Platforms',
+    allTypes: 'All Types',
+    allGroups: 'All Groups',
+    availableGroups: '{count} available groups',
+    empty: 'No matching models',
+    loadFailed: 'Failed to load model marketplace',
+    noPricing: 'Pricing not configured',
+    pricingTitle: 'Full Pricing',
+    types: {
+      chat: 'Chat Models',
+      image: 'Image Models'
+    },
+    billing: {
+      token: 'Token Billing',
+      image: 'Image Billing',
+      request: 'Per Request'
+    },
+    pricing: {
+      input: 'Input',
+      output: 'Output',
+      cacheWrite: 'Cache Write',
+      cacheRead: 'Cache Read',
+      perRequest: 'Per Request'
+    }
+  },
+
   affiliate: {
     title: 'Affiliate Rebates',
     description: 'Invite new users and convert your rebate quota into account balance',

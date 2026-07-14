@@ -507,6 +507,36 @@ export default {
     }
   },
 
+  modelMarketplace: {
+    title: '模型广场',
+    description: '查看可用模型、分组倍率与实际价格',
+    searchPlaceholder: '搜索模型、分组或渠道',
+    allPlatforms: '全部平台',
+    allTypes: '全部类型',
+    allGroups: '全部分组',
+    availableGroups: '{count} 个可用分组',
+    empty: '没有匹配的模型',
+    loadFailed: '加载模型广场失败',
+    noPricing: '暂未配置价格',
+    pricingTitle: '完整价格',
+    types: {
+      chat: '对话模型',
+      image: '生图模型'
+    },
+    billing: {
+      token: 'Token 计费',
+      image: '图片计费',
+      request: '按次计费'
+    },
+    pricing: {
+      input: '输入',
+      output: '输出',
+      cacheWrite: '缓存写入',
+      cacheRead: '缓存读取',
+      perRequest: '每次请求'
+    }
+  },
+
   affiliate: {
     title: '邀请返利',
     description: '邀请新用户注册，并将返利额度转入账户余额',

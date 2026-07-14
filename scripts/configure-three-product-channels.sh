@@ -53,7 +53,7 @@ INSERT INTO groups (
 )
 SELECT
   'Claude 满血版', 'Claude Opus / Sonnet 满血模型分组',
-  1, false, 'active', 'openai', 'standard', 30,
+  1, false, 'active', 'anthropic', 'standard', 30,
   '["claude"]'::jsonb, true, 'claude-sonnet-4-6', false
 WHERE NOT EXISTS (
   SELECT 1 FROM groups WHERE deleted_at IS NULL AND name = 'Claude 满血版'
@@ -61,7 +61,7 @@ WHERE NOT EXISTS (
 
 UPDATE groups
 SET description = 'Claude Opus / Sonnet 满血模型分组',
-    platform = 'openai',
+    platform = 'anthropic',
     status = 'active',
     allow_messages_dispatch = true,
     default_mapped_model = 'claude-sonnet-4-6',
@@ -95,6 +95,12 @@ SET priority = 10,
     error_message = NULL,
     updated_at = now()
 WHERE id IN (2, 4, 6);
+
+UPDATE accounts
+SET platform = 'anthropic',
+    extra = extra - 'openai_responses_mode' - 'openai_responses_supported',
+    updated_at = now()
+WHERE id = 4;
 
 UPDATE accounts SET priority = 20, updated_at = now() WHERE id = 1;
 UPDATE accounts SET priority = 110, updated_at = now() WHERE id = 3;
@@ -195,13 +201,13 @@ INSERT INTO channel_model_pricing (
   channel_id, platform, models, billing_mode,
   input_price, output_price, cache_write_price, cache_read_price
 )
-SELECT full_channel_id, 'openai', '["claude-opus-4-6","claude-opus-4-7","claude-opus-4-8"]'::jsonb, 'token', 0.000005, 0.000025, 0.00000625, 0.0000005 FROM product_channel_ids
+SELECT full_channel_id, 'anthropic', '["claude-opus-4-6","claude-opus-4-7","claude-opus-4-8"]'::jsonb, 'token', 0.000005, 0.000025, 0.00000625, 0.0000005 FROM product_channel_ids
 UNION ALL
-SELECT full_channel_id, 'openai', '["claude-sonnet-4-6"]'::jsonb, 'token', 0.000003, 0.000015, 0.00000375, 0.0000003 FROM product_channel_ids
+SELECT full_channel_id, 'anthropic', '["claude-sonnet-4-6"]'::jsonb, 'token', 0.000003, 0.000015, 0.00000375, 0.0000003 FROM product_channel_ids
 UNION ALL
-SELECT full_channel_id, 'openai', '["claude-fable-5"]'::jsonb, 'token', 0.00001, 0.00005, 0.0000125, 0.00001 FROM product_channel_ids
+SELECT full_channel_id, 'anthropic', '["claude-fable-5"]'::jsonb, 'token', 0.00001, 0.00005, 0.0000125, 0.00001 FROM product_channel_ids
 UNION ALL
-SELECT full_channel_id, 'openai', '["claude-sonnet-5"]'::jsonb, 'token', 0.000002, 0.00001, 0.0000025, 0.000002 FROM product_channel_ids;
+SELECT full_channel_id, 'anthropic', '["claude-sonnet-5"]'::jsonb, 'token', 0.000002, 0.00001, 0.0000025, 0.000002 FROM product_channel_ids;
 
 COMMIT;
 SQL

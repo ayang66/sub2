@@ -533,7 +533,10 @@ export default {
       output: '输出',
       cacheWrite: '缓存写入',
       cacheRead: '缓存读取',
-      perRequest: '每次请求'
+      perRequest: '每次请求',
+      contextPricing: '按上下文区间定价',
+      contextTokens: '上下文 Token',
+      infinity: '∞'
     }
   },
 

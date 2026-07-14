@@ -141,7 +141,42 @@
           </div>
         </div>
 
-        <div v-if="priceRows.length > 0" class="grid gap-2 sm:grid-cols-2">
+        <div v-if="tierPriceCards.length > 0" class="space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ t('modelMarketplace.pricing.contextPricing') }}
+            </span>
+            <span class="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-dark-700 dark:text-gray-300">
+              {{ t('modelMarketplace.pricing.contextTokens') }}
+            </span>
+          </div>
+          <div class="grid gap-3 lg:grid-cols-2">
+            <section
+              v-for="tier in tierPriceCards"
+              :key="tier.key"
+              class="overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600"
+            >
+              <div class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-dark-600 dark:bg-dark-800">
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('modelMarketplace.pricing.contextTokens') }}
+                </span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ tier.range }}</span>
+              </div>
+              <div class="divide-y divide-gray-100 px-3 dark:divide-dark-700">
+                <div
+                  v-for="row in tier.rows"
+                  :key="row.label"
+                  class="flex min-h-[40px] items-center justify-between gap-4 py-2"
+                >
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ row.label }}</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ row.value }}</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div v-else-if="priceRows.length > 0" class="grid gap-2 sm:grid-cols-2">
           <div
             v-for="row in priceRows"
             :key="row.label"
@@ -166,6 +201,7 @@ import Icon from '@/components/icons/Icon.vue'
 import PlatformIcon from '@/components/common/PlatformIcon.vue'
 import userChannelsAPI, {
   type UserAvailableGroup,
+  type UserPricingInterval,
   type UserSupportedModel,
   type UserSupportedModelPricing,
 } from '@/api/channels'
@@ -201,6 +237,12 @@ interface MarketModel {
 interface PriceRow {
   label: string
   value: string
+}
+
+interface TierPriceCard {
+  key: string
+  range: string
+  rows: PriceRow[]
 }
 
 const { t } = useI18n()
@@ -266,6 +308,24 @@ const priceRows = computed<PriceRow[]>(() => {
   const value = pricing.per_request_price ?? pricing.image_output_price
   const row = priceRow(t('modelMarketplace.pricing.perRequest'), value, rate, 1, '/ Request')
   return row ? [row] : []
+})
+
+const tierPriceCards = computed<TierPriceCard[]>(() => {
+  const pricing = selectedOffer.value?.model.pricing
+  const rate = selectedOffer.value?.effectiveRate ?? 1
+  if (!pricing || pricing.billing_mode !== BILLING_MODE_TOKEN || !pricing.intervals?.length) {
+    return []
+  }
+  return pricing.intervals.map((interval, index) => ({
+    key: `${interval.min_tokens}:${interval.max_tokens ?? 'infinity'}:${index}`,
+    range: formatTokenRange(interval),
+    rows: [
+      priceRow(t('modelMarketplace.pricing.input'), interval.input_price, rate, 1_000_000, '/ 1M Token'),
+      priceRow(t('modelMarketplace.pricing.output'), interval.output_price, rate, 1_000_000, '/ 1M Token'),
+      priceRow(t('modelMarketplace.pricing.cacheWrite'), interval.cache_write_price, rate, 1_000_000, '/ 1M Token'),
+      priceRow(t('modelMarketplace.pricing.cacheRead'), interval.cache_read_price, rate, 1_000_000, '/ 1M Token'),
+    ].filter((row): row is PriceRow => row !== null),
+  }))
 })
 
 async function loadMarketplace() {
@@ -345,9 +405,18 @@ function platformLabel(platform: string): string {
 function compactPrice(pricing: UserSupportedModelPricing | null, rate: number): string {
   if (!pricing) return t('modelMarketplace.noPricing')
   if (pricing.billing_mode === BILLING_MODE_TOKEN) {
+    if (pricing.intervals?.length) return t('modelMarketplace.pricing.contextPricing')
     return `${t('modelMarketplace.pricing.input')} ${effectivePrice(pricing.input_price, rate, 1_000_000)} · ${t('modelMarketplace.pricing.output')} ${effectivePrice(pricing.output_price, rate, 1_000_000)}`
   }
   return `${t('modelMarketplace.pricing.perRequest')} ${effectivePrice(pricing.per_request_price ?? pricing.image_output_price, rate, 1)}`
+}
+
+function formatTokenRange(interval: UserPricingInterval): string {
+  const min = interval.min_tokens.toLocaleString()
+  const max = interval.max_tokens == null
+    ? t('modelMarketplace.pricing.infinity')
+    : interval.max_tokens.toLocaleString()
+  return `${min} - ${max}`
 }
 
 function effectivePrice(value: number | null, rate: number, scale: number): string {

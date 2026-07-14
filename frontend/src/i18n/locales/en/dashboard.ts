@@ -528,7 +528,10 @@ export default {
       output: 'Output',
       cacheWrite: 'Cache Write',
       cacheRead: 'Cache Read',
-      perRequest: 'Per Request'
+      perRequest: 'Per Request',
+      contextPricing: 'Context-tiered pricing',
+      contextTokens: 'Context Tokens',
+      infinity: '∞'
     }
   },
 

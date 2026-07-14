@@ -5,7 +5,6 @@
       :interval-seconds="DEFAULT_INTERVAL_SECONDS"
       :window="currentWindow"
       :loading="loading"
-      :auto-refresh="autoRefresh"
       @update:window="handleWindowChange"
       @refresh="manualReload"
     />
@@ -13,7 +12,7 @@
     <MonitorCardGrid
       :items="items"
       :window="currentWindow"
-      :countdown-seconds="countdown"
+      :countdown-seconds="0"
       :loading="loading"
       :detail-cache="detailCache"
       @card-click="openDetail"
@@ -47,7 +46,6 @@ import MonitorHero, {
 import MonitorCardGrid from '@/components/user/monitor/MonitorCardGrid.vue'
 import MonitorDetailDialog from '@/components/user/MonitorDetailDialog.vue'
 import { DEFAULT_INTERVAL_SECONDS, STATUS_OPERATIONAL } from '@/constants/channelMonitor'
-import { useAutoRefresh } from '@/composables/useAutoRefresh'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -61,15 +59,6 @@ const showDetail = ref(false)
 const detailTarget = ref<UserMonitorView | null>(null)
 
 let abortController: AbortController | null = null
-
-const autoRefresh = useAutoRefresh({
-  storageKey: 'channel-status-auto-refresh',
-  intervals: [30, 60, 120] as const,
-  defaultInterval: DEFAULT_INTERVAL_SECONDS,
-  onRefresh: () => reload(true),
-  shouldPause: () => document.hidden || loading.value,
-})
-const countdown = autoRefresh.countdown
 
 // ── Computed ──
 const overallStatus = computed<OverallStatus>(() => {
@@ -102,7 +91,6 @@ async function reload(silent = false) {
   } finally {
     if (abortController === ctrl) {
       if (!silent) loading.value = false
-      countdown.value = DEFAULT_INTERVAL_SECONDS
       abortController = null
     }
   }
@@ -151,19 +139,8 @@ watch(items, () => {
   void ensureDetailsForWindow()
 })
 
-watch(
-  () => appStore.cachedPublicSettings?.channel_monitor_enabled,
-  (enabled) => {
-    if (enabled === false) autoRefresh.stop()
-    else if (autoRefresh.enabled.value) autoRefresh.start()
-  },
-)
-
 onMounted(() => {
   void reload(false)
-  if (appStore.cachedPublicSettings?.channel_monitor_enabled !== false) {
-    autoRefresh.setEnabled(true)
-  }
 })
 
 onBeforeUnmount(() => {

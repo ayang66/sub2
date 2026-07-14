@@ -214,6 +214,12 @@ SELECT full_channel_id, 'anthropic', '["claude-fable-5"]'::jsonb, 'token', 0.000
 UNION ALL
 SELECT full_channel_id, 'anthropic', '["claude-sonnet-5"]'::jsonb, 'token', 0.000002, 0.00001, 0.0000025, 0.0000002 FROM product_channel_ids;
 
+INSERT INTO settings (key, value)
+VALUES ('available_channels_enabled', 'true')
+ON CONFLICT (key) DO UPDATE SET
+  value = EXCLUDED.value,
+  updated_at = now();
+
 COMMIT;
 SQL
 

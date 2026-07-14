@@ -1,0 +1,11 @@
+brookeapi.cloud {
+    reverse_proxy 127.0.0.1:3000
+}
+
+www.brookeapi.cloud {
+    redir https://brookeapi.cloud{uri} permanent
+}
+
+sub2.43-135-186-16.sslip.io {
+    reverse_proxy 127.0.0.1:8080
+}

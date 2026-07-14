@@ -31,6 +31,7 @@ BEGIN;
 UPDATE groups
 SET name = 'GPT',
     description = '哈基米 GPT / Codex 模型分组',
+    rate_multiplier = 0.05,
     platform = 'openai',
     status = 'active',
     allow_image_generation = true,
@@ -40,6 +41,7 @@ WHERE id = 2;
 UPDATE groups
 SET name = 'Claude Kiro 低价版',
     description = 'Claude Kiro 低价模型分组',
+    rate_multiplier = 0.12,
     platform = 'anthropic',
     status = 'active',
     updated_at = now()
@@ -61,6 +63,7 @@ WHERE NOT EXISTS (
 
 UPDATE groups
 SET description = 'Claude Opus / Sonnet 满血模型分组',
+    rate_multiplier = 1,
     platform = 'anthropic',
     status = 'active',
     allow_messages_dispatch = true,

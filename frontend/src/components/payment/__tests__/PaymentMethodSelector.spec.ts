@@ -34,4 +34,20 @@ describe('PaymentMethodSelector', () => {
     expect(button.classes()).toContain('border-primary-500')
     expect(button.classes()).not.toContain('border-[#02A9F1]')
   })
+
+  it('marks WeChat Pay as recommended', () => {
+    const wrapper = mount(PaymentMethodSelector, {
+      props: {
+        selected: 'wxpay',
+        methods: [
+          { type: 'alipay', fee_rate: 0, available: true },
+          { type: 'wxpay', fee_rate: 0, available: true },
+        ],
+      },
+    })
+
+    expect(wrapper.text()).toContain('payment.recommended')
+    expect(wrapper.findAll('button')[1].text()).toContain('payment.recommended')
+    expect(wrapper.findAll('button')[0].text()).not.toContain('payment.recommended')
+  })
 })

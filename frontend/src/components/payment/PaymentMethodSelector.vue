@@ -19,6 +19,12 @@
         ]"
         @click="method.available && emit('select', method.type)"
       >
+        <span
+          v-if="isBuiltInWxpayMethod(method.type)"
+          class="absolute right-2 top-1.5 rounded bg-[#09BB07] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
+        >
+          {{ t('payment.recommended') }}
+        </span>
         <span class="flex items-center gap-2">
           <img :src="methodIcon(method.type)" :alt="methodLabel(method)" class="h-7 w-7 object-contain" />
           <span class="flex flex-col items-start leading-none">

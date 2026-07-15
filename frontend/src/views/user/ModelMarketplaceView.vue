@@ -66,6 +66,7 @@
         <article
           v-for="model in filteredModels"
           :key="`${model.platform}:${model.name}`"
+          :data-model="model.name"
           class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-dark-700 dark:bg-dark-800"
         >
           <header class="flex min-h-[78px] items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 dark:border-dark-700">
@@ -100,6 +101,13 @@
                   </span>
                   <span class="rounded-md border border-gray-200 bg-white px-1.5 py-0.5 text-[11px] text-gray-600 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300">
                     x{{ formatRate(offer.effectiveRate) }}
+                  </span>
+                  <span
+                    v-if="isRecommendedOffer(offer)"
+                    class="rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-700/60 dark:bg-amber-900/20 dark:text-amber-300"
+                    data-test="recommended-offer"
+                  >
+                    {{ t('modelMarketplace.recommended') }}
                   </span>
                 </div>
                 <p class="mt-1 truncate text-[11px] text-gray-400">
@@ -366,7 +374,7 @@ async function loadMarketplace() {
         }
       }
     }
-    models.value = Array.from(byModel.values()).sort((a, b) => a.name.localeCompare(b.name))
+    models.value = Array.from(byModel.values()).sort(compareMarketplaceModels)
   } catch (error: unknown) {
     appStore.showError(extractApiErrorMessage(error, t('modelMarketplace.loadFailed')))
   } finally {
@@ -379,6 +387,20 @@ function resolveModelType(model: string): MarketModel['type'] {
   if (value.includes('image') || value.includes('imagen')) return 'image'
   if (value.includes('codex') || value.includes('auto-review')) return 'codex'
   return 'chat'
+}
+
+function compareMarketplaceModels(a: MarketModel, b: MarketModel): number {
+  const rankDifference = marketplaceModelRank(a.name) - marketplaceModelRank(b.name)
+  return rankDifference || a.name.localeCompare(b.name)
+}
+
+function marketplaceModelRank(model: string): number {
+  const value = model.toLowerCase()
+  return value.startsWith('gpt-') || value.startsWith('codex-') ? 0 : 1
+}
+
+function isRecommendedOffer(offer: MarketOffer): boolean {
+  return offer.group.name === 'Codex Team'
 }
 
 function displayModelName(model: string): string {

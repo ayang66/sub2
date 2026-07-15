@@ -514,6 +514,7 @@ export default {
     loadFailed: 'Failed to load model marketplace',
     noPricing: 'Pricing not configured',
     pricingTitle: 'Full Pricing',
+    recommended: 'Recommended',
     types: {
       chat: 'Chat Models',
       image: 'Image Models'

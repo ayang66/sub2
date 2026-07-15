@@ -519,6 +519,7 @@ export default {
     loadFailed: '加载模型广场失败',
     noPricing: '暂未配置价格',
     pricingTitle: '完整价格',
+    recommended: '推荐',
     types: {
       chat: '对话模型',
       image: '生图模型'

@@ -56,6 +56,13 @@ const groupB = {
   rate_multiplier: 0.06,
 }
 
+const groupTeam = {
+  ...groupA,
+  id: 103,
+  name: 'Codex Team',
+  rate_multiplier: 0.05,
+}
+
 const pricing = {
   billing_mode: 'token',
   input_price: 0.000005,
@@ -90,6 +97,24 @@ function mountView() {
         supported_models: [{ name: 'gpt-5.5', platform: 'openai', pricing }],
       }],
     },
+    {
+      name: 'Codex Team',
+      description: '',
+      platforms: [{
+        platform: 'openai',
+        groups: [groupTeam],
+        supported_models: [{ name: 'gpt-5.5', platform: 'openai', pricing }],
+      }],
+    },
+    {
+      name: 'Elucid / cn-openai',
+      description: '',
+      platforms: [{
+        platform: 'openai',
+        groups: [{ ...groupA, id: 104, name: 'Elucid / cn-openai', rate_multiplier: 0.48 }],
+        supported_models: [{ name: 'deepseek-v4-pro', platform: 'openai', pricing }],
+      }],
+    },
   ])
   getUserGroupRates.mockResolvedValue({})
   listMonitors.mockResolvedValue({ items: [] })
@@ -107,6 +132,17 @@ function mountView() {
 }
 
 describe('ModelMarketplaceView filters', () => {
+  it('pins GPT models and marks Codex Team as recommended', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+
+    const cards = wrapper.findAll('article')
+    expect(cards[0].attributes('data-model')).toBe('gpt-5.5')
+    expect(cards[1].attributes('data-model')).toBe('gpt-5.6')
+    expect(cards.at(-1)?.attributes('data-model')).toBe('deepseek-v4-pro')
+    expect(wrapper.get('[data-test="recommended-offer"]').text()).toBe('modelMarketplace.recommended')
+  })
+
   it('removes offers from other groups when a group is selected', async () => {
     const wrapper = mountView()
     await flushPromises()

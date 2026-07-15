@@ -150,6 +150,8 @@ export default {
     dashboard: 'Dashboard',
     announcements: 'Announcements',
     apiKeys: 'API Keys',
+    aiTools: 'AI Tool Setup',
+    guide: 'Documentation',
     batchImage: 'Batch Images',
     usage: 'Usage',
     redeem: 'Redeem',
@@ -191,6 +193,15 @@ export default {
     channelMonitor: 'Channel Monitor',
     channelStatus: 'Channel Status',
     riskControl: 'Risk Control',
+  },
+
+  aiTools: {
+    title: 'AI Tool Setup',
+    description: 'Download and configure Codex, Claude Code, and CC Switch'
+  },
+  guide: {
+    title: 'Documentation',
+    description: 'Read the complete Codex and Claude Code setup guide'
   },
 
   // Auth

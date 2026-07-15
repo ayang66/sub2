@@ -206,6 +206,30 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/ai-tools',
+    name: 'AiTools',
+    component: () => import('@/views/user/AiToolsView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'AI Tools',
+      titleKey: 'aiTools.title',
+      descriptionKey: 'aiTools.description'
+    }
+  },
+  {
+    path: '/guide',
+    name: 'Guide',
+    component: () => import('@/views/user/GuideView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Documentation',
+      titleKey: 'guide.title',
+      descriptionKey: 'guide.description'
+    }
+  },
+  {
     path: '/batch-image',
     name: 'BatchImageGuide',
     alias: '/docs/batch-image',

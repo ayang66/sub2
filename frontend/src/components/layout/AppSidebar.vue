@@ -292,6 +292,20 @@ const KeyIcon = {
     )
 }
 
+const ToolIcon = {
+  render: () =>
+    h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' }, [
+      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M11.42 15.17l-5.66 5.66a2.25 2.25 0 01-3.18-3.18l5.66-5.66m3.18 3.18 2.12-2.12m-2.12 2.12-3.18-3.18m5.3 1.06 6.89-6.89a2.25 2.25 0 013.18 3.18l-6.89 6.89m-3.18-3.18 3.18 3.18M15 5.25l3.75 3.75M3.75 3.75l6 6' })
+    ])
+}
+
+const DocumentIcon = {
+  render: () =>
+    h('svg', { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' }, [
+      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M8.25 12h7.5m-7.5 3h7.5m-7.5 3H12M10.5 2.25H5.625A1.125 1.125 0 004.5 3.375v17.25c0 .621.504 1.125 1.125 1.125h12.75a1.125 1.125 0 001.125-1.125V11.25a9 9 0 00-9-9z' })
+    ])
+}
+
 const BatchImageIcon = {
   render: () =>
     h(
@@ -700,6 +714,8 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
   }
   items.push(
     { path: '/keys', label: t('nav.apiKeys'), icon: KeyIcon },
+    { path: '/ai-tools', label: t('nav.aiTools'), icon: ToolIcon },
+    { path: '/guide', label: t('nav.guide'), icon: DocumentIcon },
     { path: '/batch-image', label: t('nav.batchImage'), icon: BatchImageIcon, hideInSimpleMode: true, featureFlag: flagBatchImageAccess },
     { path: '/usage', label: t('nav.usage'), icon: ChartIcon, hideInSimpleMode: true },
     { path: '/model-marketplace', label: t('nav.modelMarketplace'), icon: ChannelIcon },

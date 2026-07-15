@@ -150,6 +150,8 @@ export default {
     dashboard: '仪表盘',
     announcements: '公告',
     apiKeys: 'API 密钥',
+    aiTools: 'AI 工具安装',
+    guide: '使用文档',
     batchImage: '批量生图',
     usage: '使用记录',
     redeem: '兑换',
@@ -191,6 +193,15 @@ export default {
     channelMonitor: '渠道监控',
     channelStatus: '渠道状态',
     riskControl: '风控中心',
+  },
+
+  aiTools: {
+    title: 'AI 工具安装',
+    description: '下载并配置 Codex、Claude Code 和 CC Switch'
+  },
+  guide: {
+    title: '使用文档',
+    description: '查看 Codex 与 Claude Code 的完整接入教程'
   },
 
   // Auth

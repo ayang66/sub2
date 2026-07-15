@@ -271,20 +271,19 @@ const groupOptions = computed(() => {
 
 const filteredModels = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
-  return models.value.filter((model) => {
-    if (platformFilter.value && model.platform !== platformFilter.value) return false
-    if (typeFilter.value && model.type !== typeFilter.value) return false
-    if (groupFilter.value && !model.offers.some((offer) => String(offer.group.id) === groupFilter.value)) {
-      return false
-    }
-    if (!query) return true
-    return (
+  return models.value.flatMap((model) => {
+    if (platformFilter.value && model.platform !== platformFilter.value) return []
+    if (typeFilter.value && model.type !== typeFilter.value) return []
+    const modelMatchesQuery = !query || (
       model.name.toLowerCase().includes(query) ||
-      displayModelName(model.name).toLowerCase().includes(query) ||
-      model.offers.some((offer) =>
-        `${offer.group.name} ${offer.channelName}`.toLowerCase().includes(query),
-      )
+      displayModelName(model.name).toLowerCase().includes(query)
     )
+    const offers = model.offers.filter((offer) => {
+      if (groupFilter.value && String(offer.group.id) !== groupFilter.value) return false
+      if (modelMatchesQuery) return true
+      return `${offer.group.name} ${offer.channelName}`.toLowerCase().includes(query)
+    })
+    return offers.length > 0 ? [{ ...model, offers }] : []
   })
 })
 

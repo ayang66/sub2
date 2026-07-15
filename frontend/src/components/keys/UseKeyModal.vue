@@ -28,6 +28,21 @@
           {{ platformDescription }}
         </p>
 
+        <div class="flex flex-col gap-2 rounded-lg border border-primary-200 bg-primary-50 px-4 py-3 dark:border-primary-800 dark:bg-primary-950/40 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase text-primary-600 dark:text-primary-400">Base URL</p>
+            <code class="mt-1 block break-all text-sm font-semibold text-gray-900 dark:text-white">{{ displayedBaseUrl }}</code>
+          </div>
+          <button
+            type="button"
+            class="btn btn-secondary shrink-0 self-start sm:self-auto"
+            @click="copyBaseUrl"
+          >
+            <Icon :name="baseUrlCopied ? 'check' : 'copy'" size="sm" />
+            {{ baseUrlCopied ? t('keys.useKeyModal.copied') : t('keys.useKeyModal.copy') }}
+          </button>
+        </div>
+
         <!-- Client Tabs -->
         <div v-if="clientTabs.length" class="border-b border-gray-200 dark:border-dark-700">
           <nav class="-mb-px flex space-x-6" aria-label="Client">
@@ -173,8 +188,34 @@ const { t } = useI18n()
 const { copyToClipboard: clipboardCopy } = useClipboard()
 
 const copiedIndex = ref<number | null>(null)
+const baseUrlCopied = ref(false)
 const activeTab = ref<string>('unix')
 const activeClientTab = ref<string>('claude')
+
+function baseRoot(value: string): string {
+  return (value || window.location.origin).replace(/\/v1\/?$/, '').replace(/\/+$/, '')
+}
+
+function ensureV1(value: string): string {
+  const trimmed = value.replace(/\/+$/, '')
+  return trimmed.endsWith('/v1') ? trimmed : `${trimmed}/v1`
+}
+
+const displayedBaseUrl = computed(() => {
+  const root = baseRoot(props.baseUrl)
+  if (props.platform === 'openai' && activeClientTab.value !== 'claude') return ensureV1(root)
+  if (props.platform === 'grok') return ensureV1(root)
+  return root
+})
+
+async function copyBaseUrl() {
+  const success = await clipboardCopy(displayedBaseUrl.value, t('keys.copied'))
+  if (!success) return
+  baseUrlCopied.value = true
+  window.setTimeout(() => {
+    baseUrlCopied.value = false
+  }, 1800)
+}
 
 // Reset tabs when platform changes
 const defaultClientTab = computed(() => {
@@ -391,19 +432,15 @@ const comment = (value: string) => wrapToken('text-slate-500', value)
 const currentFiles = computed((): FileConfig[] => {
   const baseUrl = props.baseUrl || window.location.origin
   const apiKey = props.apiKey
-  const baseRoot = baseUrl.replace(/\/v1\/?$/, '').replace(/\/+$/, '')
-  const ensureV1 = (value: string) => {
-    const trimmed = value.replace(/\/+$/, '')
-    return trimmed.endsWith('/v1') ? trimmed : `${trimmed}/v1`
-  }
-  const apiBase = ensureV1(baseRoot)
-  const antigravityBase = ensureV1(`${baseRoot}/antigravity`)
+  const normalizedRoot = baseRoot(baseUrl)
+  const apiBase = ensureV1(normalizedRoot)
+  const antigravityBase = ensureV1(`${normalizedRoot}/antigravity`)
   const antigravityGeminiBase = (() => {
-    const trimmed = `${baseRoot}/antigravity`.replace(/\/+$/, '')
+    const trimmed = `${normalizedRoot}/antigravity`.replace(/\/+$/, '')
     return trimmed.endsWith('/v1beta') ? trimmed : `${trimmed}/v1beta`
   })()
   const geminiBase = (() => {
-    const trimmed = baseRoot.replace(/\/+$/, '')
+    const trimmed = normalizedRoot.replace(/\/+$/, '')
     return trimmed.endsWith('/v1beta') ? trimmed : `${trimmed}/v1beta`
   })()
 
@@ -433,9 +470,9 @@ const currentFiles = computed((): FileConfig[] => {
         return generateAnthropicFiles(baseUrl, apiKey)
       }
       if (activeClientTab.value === 'codex-ws') {
-        return generateOpenAIWsFiles(baseUrl, apiKey)
+        return generateOpenAIWsFiles(apiBase, apiKey)
       }
-      return generateOpenAIFiles(baseUrl, apiKey)
+      return generateOpenAIFiles(apiBase, apiKey)
     case 'gemini':
       return [generateGeminiCliContent(baseUrl, apiKey)]
     case 'antigravity':

@@ -110,6 +110,33 @@ describe('UseKeyModal', () => {
     expect(configToml).toContain('[features]\ngoals = true')
   })
 
+  it('shows and applies the normalized OpenAI Base URL', () => {
+    const wrapper = mount(UseKeyModal, {
+      props: {
+        show: true,
+        apiKey: 'sk-test',
+        baseUrl: 'https://brookeapi.cloud',
+        platform: 'openai'
+      },
+      global: {
+        stubs: {
+          BaseDialog: {
+            template: '<div><slot /><slot name="footer" /></div>'
+          },
+          Icon: {
+            template: '<span />'
+          }
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('https://brookeapi.cloud/v1')
+    const configToml = wrapper.findAll('pre code')
+      .map((code) => code.text())
+      .find((content) => content.includes('model_provider = "OpenAI"'))
+    expect(configToml).toContain('base_url = "https://brookeapi.cloud/v1"')
+  })
+
   it('renders GPT-5.5 and goals feature in OpenAI Codex WebSocket config', async () => {
     const wrapper = mount(UseKeyModal, {
       props: {

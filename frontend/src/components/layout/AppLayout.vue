@@ -27,9 +27,6 @@
           <Icon name="chatBubble" size="sm" class="shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span class="font-medium">客服微信</span>
           <strong class="text-base">{{ supportWechat }}</strong>
-          <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
-            新客领 5 元额度
-          </span>
           <Icon :name="supportCopied ? 'check' : 'copy'" size="sm" class="shrink-0" />
         </button>
       </div>

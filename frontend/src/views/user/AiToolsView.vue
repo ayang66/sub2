@@ -103,7 +103,7 @@
 
       <div class="rounded-lg border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
         Claude Code 必须使用支持 <code>/v1/messages</code> 的分组和模型。安装或配置遇到问题，可添加客服微信
-        <button type="button" class="font-semibold underline decoration-dotted underline-offset-4" @click="copyWechat">15137315710</button>，新客领五元额度。
+        <button type="button" class="font-semibold underline decoration-dotted underline-offset-4" @click="copyWechat">15137315710</button>。
       </div>
     </div>
   </AppLayout>

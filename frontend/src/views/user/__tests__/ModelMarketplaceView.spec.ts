@@ -42,6 +42,12 @@ const groupA = {
   platform: 'openai',
   subscription_type: 'standard',
   rate_multiplier: 0.12,
+  allow_image_generation: false,
+  image_rate_independent: false,
+  image_rate_multiplier: 1,
+  image_price_1k: null,
+  image_price_2k: null,
+  image_price_4k: null,
   peak_rate_enabled: false,
   peak_start: '',
   peak_end: '',
@@ -61,6 +67,11 @@ const groupTeam = {
   id: 103,
   name: 'Codex Team',
   rate_multiplier: 0.05,
+  allow_image_generation: true,
+  image_rate_independent: true,
+  image_price_1k: 0.04,
+  image_price_2k: 0.06,
+  image_price_4k: 0.08,
 }
 
 const pricing = {
@@ -103,7 +114,14 @@ function mountView() {
       platforms: [{
         platform: 'openai',
         groups: [groupTeam],
-        supported_models: [{ name: 'gpt-5.5', platform: 'openai', pricing }],
+        supported_models: [
+          { name: 'gpt-5.5', platform: 'openai', pricing },
+          {
+            name: 'gpt-image-2',
+            platform: 'openai',
+            pricing: { ...pricing, billing_mode: 'image', per_request_price: 0.04 },
+          },
+        ],
       }],
     },
     {
@@ -166,5 +184,15 @@ describe('ModelMarketplaceView filters', () => {
     expect(results).toContain('Elucid / codex-mixed')
     expect(results).not.toContain('Elucid / codex-pro')
     expect(results).not.toContain('gpt-5.6')
+  })
+
+  it('shows Codex Team image pricing from the group configuration', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+
+    const imageCard = wrapper.find('[data-model="gpt-image-2"]')
+    expect(imageCard.exists()).toBe(true)
+    expect(imageCard.text()).toContain('Codex Team')
+    expect(imageCard.text()).toContain('$0.04 USD / 张')
   })
 })

@@ -111,7 +111,7 @@
                   </span>
                 </div>
                 <p class="mt-1 truncate text-[11px] text-gray-400">
-                  {{ compactPrice(offer.model.pricing, offer.effectiveRate) }}
+                  {{ compactPrice(offer) }}
                 </p>
               </div>
               <span class="flex flex-none items-center gap-1 text-[11px]" :class="statusTextClass(offer.status)">
@@ -303,6 +303,17 @@ const dialogTitle = computed(() => {
 const priceRows = computed<PriceRow[]>(() => {
   const pricing = selectedOffer.value?.model.pricing
   const rate = selectedOffer.value?.effectiveRate ?? 1
+  if (selectedModel.value?.type === 'image' && selectedOffer.value?.group.allow_image_generation) {
+    const group = selectedOffer.value.group
+    const multiplier = group.image_rate_independent
+      ? (group.image_rate_multiplier ?? 1)
+      : rate
+    return [
+      imagePriceRow('1K', group.image_price_1k, multiplier),
+      imagePriceRow('2K', group.image_price_2k, multiplier),
+      imagePriceRow('4K', group.image_price_4k, multiplier),
+    ].filter((row): row is PriceRow => row !== null)
+  }
   if (!pricing) return []
   if (pricing.billing_mode === BILLING_MODE_TOKEN) {
     return [
@@ -423,13 +434,29 @@ function platformLabel(platform: string): string {
   return labels[platform] ?? platform
 }
 
-function compactPrice(pricing: UserSupportedModelPricing | null, rate: number): string {
+function compactPrice(offer: MarketOffer): string {
+  if (resolveModelType(offer.model.name) === 'image' && offer.group.allow_image_generation) {
+    const multiplier = offer.group.image_rate_independent
+      ? (offer.group.image_rate_multiplier ?? 1)
+      : offer.effectiveRate
+    const firstPrice = offer.group.image_price_1k
+      ?? offer.group.image_price_2k
+      ?? offer.group.image_price_4k
+    if (firstPrice != null) return `1K ${formatScaled(firstPrice * multiplier, 1)} USD / 张`
+  }
+  const pricing = offer.model.pricing
+  const rate = offer.effectiveRate
   if (!pricing) return t('modelMarketplace.noPricing')
   if (pricing.billing_mode === BILLING_MODE_TOKEN) {
     if (pricing.intervals?.length) return t('modelMarketplace.pricing.contextPricing')
     return `${t('modelMarketplace.pricing.input')} ${effectivePrice(pricing.input_price, rate, 1_000_000)} · ${t('modelMarketplace.pricing.output')} ${effectivePrice(pricing.output_price, rate, 1_000_000)}`
   }
   return `${t('modelMarketplace.pricing.perRequest')} ${effectivePrice(pricing.per_request_price ?? pricing.image_output_price, rate, 1)}`
+}
+
+function imagePriceRow(label: string, value: number | null | undefined, multiplier: number): PriceRow | null {
+  if (value == null) return null
+  return { label, value: `${formatScaled(value * multiplier, 1)} USD / 张` }
 }
 
 function formatTokenRange(interval: UserPricingInterval): string {

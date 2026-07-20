@@ -628,7 +628,10 @@ export default {
     codeRedeemSuccess: '兑换成功！',
     failedToRedeem: '兑换失败，请检查兑换码后重试。',
     subscriptionRefreshFailed: '兑换成功，但订阅状态刷新失败。',
-    pleaseEnterCode: '请输入兑换码'
+    pleaseEnterCode: '请输入兑换码',
+    purchaseCode: '需要兑换码？',
+    purchaseCodeHint: '链动小铺每张10元，付款后自动发货',
+    purchaseButton: '购买兑换码'
   },
 
   // Profile

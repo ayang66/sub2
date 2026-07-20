@@ -69,6 +69,14 @@ export default {
     notConfiguredDesc: '管理员已开启入口，但尚未配置充值/订阅链接，请联系管理员。'
   },
 
+  redeemShop: {
+    title: '购买10元兑换码',
+    description: '每张兑换码10元，付款后由链动小铺自动发货',
+    redeemNow: '去兑换',
+    openInNewTab: '新窗口打开',
+    iframeTitle: '链动小铺10元兑换码'
+  },
+
   // Custom Page (iframe embed)
   customPage: {
     title: '自定义页面',

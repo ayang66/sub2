@@ -182,6 +182,7 @@ export default {
     github: 'GitHub',
     mySubscriptions: '我的订阅',
     buySubscription: '充值/订阅',
+    buyRedeemCode: '购买兑换码',
     docs: '文档',
     myOrders: '我的订单',
     orderManagement: '订单管理',

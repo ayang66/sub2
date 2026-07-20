@@ -71,6 +71,14 @@ export default {
       'The administrator enabled the entry but has not configured a recharge/subscription URL. Please contact admin.'
   },
 
+  redeemShop: {
+    title: 'Buy a CNY 10 Redeem Code',
+    description: 'Each code costs CNY 10 and is delivered automatically by Liandong Shop after payment',
+    redeemNow: 'Redeem Code',
+    openInNewTab: 'Open in new tab',
+    iframeTitle: 'Liandong Shop CNY 10 Redeem Code'
+  },
+
   // Custom Page (iframe embed)
   customPage: {
     title: 'Custom Page',

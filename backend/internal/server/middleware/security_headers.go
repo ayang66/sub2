@@ -28,6 +28,8 @@ const (
 	AirwallexDemoStaticDomain = "https://static-demo.airwallex.com"
 	// AirwallexDemoCheckoutDomain 是 Airwallex 沙箱环境收银台元素和 iframe 域名。
 	AirwallexDemoCheckoutDomain = "https://checkout-demo.airwallex.com"
+	// LianDongShopDomain 是用户购买10元兑换码的链动小铺域名。
+	LianDongShopDomain = "https://pay.ldxp.cn"
 )
 
 var requiredCSPDirectiveValues = []struct {
@@ -47,6 +49,7 @@ var requiredCSPDirectiveValues = []struct {
 	{"style-src", AirwallexDemoStaticDomain},
 	{"style-src", AirwallexDemoCheckoutDomain},
 	{"frame-src", AirwallexDemoCheckoutDomain},
+	{"frame-src", LianDongShopDomain},
 }
 
 // GenerateNonce generates a cryptographically secure random nonce.

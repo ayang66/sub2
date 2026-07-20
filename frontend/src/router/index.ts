@@ -328,15 +328,14 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/purchase',
-    name: 'PurchaseSubscription',
-    component: () => import('@/views/user/PaymentView.vue'),
+    name: 'RedeemShop',
+    component: () => import('@/views/user/RedeemShopView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'Purchase Subscription',
-      titleKey: 'nav.buySubscription',
-      descriptionKey: 'purchase.description',
-      requiresPayment: true
+      title: 'Buy Redeem Code',
+      titleKey: 'nav.buyRedeemCode',
+      descriptionKey: 'redeemShop.description'
     }
   },
   {

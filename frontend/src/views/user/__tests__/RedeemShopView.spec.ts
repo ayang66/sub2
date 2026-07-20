@@ -8,7 +8,7 @@ vi.mock('vue-i18n', () => ({
 }))
 
 describe('RedeemShopView', () => {
-  it('embeds the fixed Liandong Shop product without user credentials', () => {
+  it('embeds the Liandong Shop storefront without user credentials', () => {
     const wrapper = shallowMount(RedeemShopView, {
       global: {
         stubs: {
@@ -20,7 +20,7 @@ describe('RedeemShopView', () => {
     })
 
     const frame = wrapper.get('iframe')
-    expect(frame.attributes('src')).toBe('https://pay.ldxp.cn/item/36093g')
+    expect(frame.attributes('src')).toBe('https://pay.ldxp.cn/shop/XO2MFXMN')
     expect(frame.attributes('src')).not.toContain('token=')
     expect(frame.attributes('src')).not.toContain('user_id=')
   })

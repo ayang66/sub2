@@ -50,7 +50,7 @@ import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 
-const shopUrl = 'https://pay.ldxp.cn/item/36093g'
+const shopUrl = 'https://pay.ldxp.cn/shop/XO2MFXMN'
 const loading = ref(true)
 const { t } = useI18n()
 </script>

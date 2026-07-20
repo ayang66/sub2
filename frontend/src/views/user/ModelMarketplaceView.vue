@@ -211,7 +211,6 @@ import userChannelsAPI, {
   type UserAvailableGroup,
   type UserPricingInterval,
   type UserSupportedModel,
-  type UserSupportedModelPricing,
 } from '@/api/channels'
 import userGroupsAPI from '@/api/groups'
 import channelMonitorUserAPI, { type MonitorStatus } from '@/api/channelMonitor'

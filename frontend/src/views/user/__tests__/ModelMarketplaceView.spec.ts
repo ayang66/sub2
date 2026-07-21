@@ -65,8 +65,8 @@ const groupB = {
 const groupTeam = {
   ...groupA,
   id: 103,
-  name: 'Codex Team',
-  rate_multiplier: 0.05,
+  name: 'Codex Plus',
+  rate_multiplier: 0.1,
   allow_image_generation: true,
   image_rate_independent: true,
   image_price_1k: 0.04,
@@ -109,7 +109,7 @@ function mountView() {
       }],
     },
     {
-      name: 'Codex Team',
+      name: 'Codex Plus',
       description: '',
       platforms: [{
         platform: 'openai',
@@ -150,7 +150,7 @@ function mountView() {
 }
 
 describe('ModelMarketplaceView filters', () => {
-  it('pins GPT models and marks Codex Team as recommended', async () => {
+  it('pins GPT models and marks Codex Plus as recommended', async () => {
     const wrapper = mountView()
     await flushPromises()
 
@@ -186,13 +186,13 @@ describe('ModelMarketplaceView filters', () => {
     expect(results).not.toContain('gpt-5.6')
   })
 
-  it('shows Codex Team image pricing from the group configuration', async () => {
+  it('shows Codex Plus image pricing from the group configuration', async () => {
     const wrapper = mountView()
     await flushPromises()
 
     const imageCard = wrapper.find('[data-model="gpt-image-2"]')
     expect(imageCard.exists()).toBe(true)
-    expect(imageCard.text()).toContain('Codex Team')
+    expect(imageCard.text()).toContain('Codex Plus')
     expect(imageCard.text()).toContain('$0.04 USD / 张')
   })
 })

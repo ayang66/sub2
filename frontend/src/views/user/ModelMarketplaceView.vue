@@ -410,7 +410,7 @@ function marketplaceModelRank(model: string): number {
 }
 
 function isRecommendedOffer(offer: MarketOffer): boolean {
-  return offer.group.name === 'Codex Team'
+  return offer.group.name === 'Codex Plus'
 }
 
 function displayModelName(model: string): string {

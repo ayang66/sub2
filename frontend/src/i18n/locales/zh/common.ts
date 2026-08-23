@@ -156,6 +156,7 @@ export default {
     aiTools: 'AI 工具安装',
     guide: '使用文档',
     batchImage: '批量生图',
+    imageWorkbench: '聊天生图',
     usage: '使用记录',
     redeem: '兑换',
     affiliate: '邀请返利',

@@ -156,6 +156,7 @@ export default {
     aiTools: 'AI Tool Setup',
     guide: 'Documentation',
     batchImage: 'Batch Images',
+    imageWorkbench: 'Chat Images',
     usage: 'Usage',
     redeem: 'Redeem',
     affiliate: 'Affiliate Rebates',

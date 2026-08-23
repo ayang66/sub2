@@ -701,6 +701,7 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
     { path: '/ai-tools', label: t('nav.aiTools'), icon: ToolIcon },
     { path: '/guide', label: t('nav.guide'), icon: DocumentIcon },
     { path: '/batch-image', label: t('nav.batchImage'), icon: BatchImageIcon, hideInSimpleMode: true, featureFlag: flagBatchImageAccess },
+    { path: '/image-workbench', label: t('nav.imageWorkbench'), icon: BatchImageIcon, hideInSimpleMode: true, featureFlag: flagBatchImageAccess },
     { path: '/usage', label: t('nav.usage'), icon: ChartIcon, hideInSimpleMode: true },
     { path: '/model-marketplace', label: t('nav.modelMarketplace'), icon: ChannelIcon },
     { path: '/monitor', label: t('nav.channelStatus'), icon: SignalIcon, featureFlag: flagChannelMonitor },

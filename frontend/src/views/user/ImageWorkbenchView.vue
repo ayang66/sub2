@@ -52,7 +52,7 @@
         <div class="flex items-end gap-3 rounded-2xl border border-gray-300 bg-gray-50 p-2 focus-within:border-primary-500 dark:border-dark-600 dark:bg-dark-800">
           <input ref="fileInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="onReferenceSelected" />
           <button type="button" class="btn btn-secondary h-11 w-11 p-0" title="上传参考图" :disabled="generating" @click="fileInput?.click()"><Icon name="upload" size="md" /></button>
-          <textarea v-model="prompt" rows="2" class="min-h-[48px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-gray-400 dark:text-white" placeholder="输入消息，或描述你想生成的图片..." @keydown.enter.exact.prevent="submit" />
+          <textarea v-model="prompt" rows="2" class="min-h-[48px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-gray-400 dark:text-white" placeholder="输入消息，或描述你想生成的图片..." @keydown.enter.exact.prevent="submit" @paste="onPaste" />
           <button type="button" class="btn btn-primary h-11 w-11 p-0" :disabled="generating || !prompt.trim() || !selectedKey" title="发送" @click="submit"><Icon name="arrowUp" size="md" /></button>
         </div>
         <p v-if="!selectedKey" class="mt-2 text-xs text-amber-600 dark:text-amber-400">请先选择一个允许生图的活动 API Key。</p>
@@ -107,9 +107,7 @@ function dataUrl(item: { b64_json?: string; url?: string }) {
   return item.b64_json ? `data:image/png;base64,${item.b64_json}` : item.url || ''
 }
 
-function onReferenceSelected(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
+function setReference(file: File) {
   if (file.size > 20 * 1024 * 1024) {
     appStore.showError('参考图不能超过 20MB')
     return
@@ -117,6 +115,20 @@ function onReferenceSelected(event: Event) {
   if (referencePreview.value) URL.revokeObjectURL(referencePreview.value)
   referenceFile.value = file
   referencePreview.value = URL.createObjectURL(file)
+}
+
+function onReferenceSelected(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) setReference(file)
+}
+
+function onPaste(event: ClipboardEvent) {
+  const image = Array.from(event.clipboardData?.items || [])
+    .find(item => item.kind === 'file' && item.type.startsWith('image/'))
+    ?.getAsFile()
+  if (!image) return
+  event.preventDefault()
+  setReference(image)
 }
 
 function clearReference(revoke = true) {

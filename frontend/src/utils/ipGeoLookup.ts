@@ -23,9 +23,9 @@ export interface IpGeoEntry {
 const IDLE_ENTRY: IpGeoEntry = { status: 'idle' }
 const CACHE_STORAGE_KEY = 'sub2api:ip-geo-cache:v1'
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
-const BATCH_CHUNK_SIZE = 50
-const GEO_SINGLE_URL = 'https://get.geojs.io/v1/ip/geo'
-const GEO_BATCH_URL = 'https://get.geojs.io/v1/ip/geo.json'
+const BATCH_CONCURRENCY = 6
+const GEO_REQUEST_TIMEOUT_MS = 8000
+const GEO_SINGLE_URL = 'https://ipwho.is'
 
 interface StoredEntry {
   label: string
@@ -113,15 +113,20 @@ export function formatGeoLabel(detail: IpGeoDetail): string {
 }
 
 interface RawGeoResponse {
-  ip: string
+  ip?: string
+  success?: boolean
   country_code?: string
+  country?: string
   region?: string
   city?: string
-  organization?: string
-  timezone?: string
-  accuracy?: number
-  latitude?: string
-  longitude?: string
+  latitude?: number | string
+  longitude?: number | string
+  connection?: {
+    org?: string
+  }
+  timezone?: {
+    id?: string
+  }
 }
 
 function toDetail(raw: RawGeoResponse): IpGeoDetail {
@@ -129,11 +134,10 @@ function toDetail(raw: RawGeoResponse): IpGeoDetail {
     countryCode: raw.country_code,
     region: raw.region,
     city: raw.city,
-    organization: raw.organization,
-    timezone: raw.timezone,
-    accuracy: raw.accuracy,
-    latitude: raw.latitude,
-    longitude: raw.longitude,
+    organization: raw.connection?.org,
+    timezone: raw.timezone?.id,
+    latitude: raw.latitude == null ? undefined : String(raw.latitude),
+    longitude: raw.longitude == null ? undefined : String(raw.longitude),
   }
 }
 
@@ -161,8 +165,10 @@ export async function fetchOne(ip: string, force = false): Promise<void> {
     return
   }
   cache.set(ip, { status: 'loading' })
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), GEO_REQUEST_TIMEOUT_MS)
   try {
-    const response = await fetch(`${GEO_SINGLE_URL}/${encodeURIComponent(ip)}.json`)
+    const response = await fetch(`${GEO_SINGLE_URL}/${encodeURIComponent(ip)}`, { signal: controller.signal })
     if (!response.ok) {
       cache.set(ip, { status: 'error' })
       return
@@ -172,6 +178,8 @@ export async function fetchOne(ip: string, force = false): Promise<void> {
     persistToStorage()
   } catch {
     cache.set(ip, { status: 'error' })
+  } finally {
+    window.clearTimeout(timeout)
   }
 }
 
@@ -191,24 +199,29 @@ export async function fetchBatch(ips: string[]): Promise<boolean> {
 
   targets.forEach((ip) => cache.set(ip, { status: 'loading' }))
 
-  let allChunksOk = true
-  for (let i = 0; i < targets.length; i += BATCH_CHUNK_SIZE) {
-    const chunk = targets.slice(i, i + BATCH_CHUNK_SIZE)
-    try {
-      const response = await fetch(`${GEO_BATCH_URL}?ip=${chunk.map(encodeURIComponent).join(',')}`)
-      if (!response.ok) {
-        chunk.forEach((ip) => cache.set(ip, { status: 'error' }))
-        allChunksOk = false
-        continue
-      }
-      const results = (await response.json()) as RawGeoResponse[]
-      const byIp = new Map(results.map((r) => [r.ip, r]))
-      chunk.forEach((ip) => applyResult(ip, byIp.get(ip)))
-      persistToStorage()
-    } catch {
-      chunk.forEach((ip) => cache.set(ip, { status: 'error' }))
-      allChunksOk = false
-    }
+  let allOk = true
+  for (let i = 0; i < targets.length; i += BATCH_CONCURRENCY) {
+    const chunk = targets.slice(i, i + BATCH_CONCURRENCY)
+    const results = await Promise.all(
+      chunk.map(async (ip) => {
+        const controller = new AbortController()
+        const timeout = window.setTimeout(() => controller.abort(), GEO_REQUEST_TIMEOUT_MS)
+        try {
+          const response = await fetch(`${GEO_SINGLE_URL}/${encodeURIComponent(ip)}`, { signal: controller.signal })
+          if (!response.ok) return { ip, raw: undefined }
+          return { ip, raw: (await response.json()) as RawGeoResponse }
+        } catch {
+          return { ip, raw: undefined }
+        } finally {
+          window.clearTimeout(timeout)
+        }
+      })
+    )
+    results.forEach(({ ip, raw }) => {
+      if (!raw?.success || !raw.country_code) allOk = false
+      applyResult(ip, raw)
+    })
+    persistToStorage()
   }
-  return allChunksOk
+  return allOk
 }

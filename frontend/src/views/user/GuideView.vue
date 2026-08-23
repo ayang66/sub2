@@ -92,5 +92,7 @@ const renderedGuide = computed(() => DOMPurify.sanitize(marked.parse(source, { r
 .guide-content th { background: rgb(249 250 251); color: rgb(31 41 55); font-weight: 650; }
 .dark .guide-content th, .dark .guide-content td { border-color: rgb(55 65 81); }
 .dark .guide-content th { background: rgb(31 41 55); color: rgb(243 244 246); }
+.guide-content img { display: block; max-width: 100%; height: auto; margin: 1rem 0; border: 1px solid rgb(229 231 235); border-radius: 0.5rem; }
+.dark .guide-content img { border-color: rgb(55 65 81); }
 @media (max-width: 640px) { .guide-content h1 { font-size: 1.55rem; } .guide-content table { display: block; overflow-x: auto; white-space: nowrap; } }
 </style>

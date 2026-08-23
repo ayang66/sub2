@@ -648,7 +648,7 @@ export default {
     pleaseEnterCode: '请输入兑换码',
     purchaseCode: '需要兑换码？',
     purchaseCodeHint: '链动小铺每张10元，付款后自动发货',
-    purchaseButton: '购买兑换码'
+    purchaseButton: '购买余额'
   },
 
   // Profile

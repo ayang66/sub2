@@ -106,7 +106,120 @@ model_reasoning_effort = "minimal"
 
 Codex 安装器支持自定义安装目录，并可写入模型供应商、接口基址、API Key 和模型名称。
 
-## 六、Claude Code 一键安装与配置
+## 六、在 Codex 中配置 Image 2 生图 MCP
+
+哈基米中转站提供 OpenAI 图片生成兼容接口，可以通过本地 MCP 服务让 Codex 调用生图工具。请先在本站创建一个有权访问 **gpt-image-2** 的 API Key。截图中的 Key 仅用于说明位置，不能直接复制使用。
+
+### 1. 确认生图分组和 API Key
+
+在本站的 API 密钥页面选择生图分组，复制完整的 `sk-` 密钥。确认该分组可以访问 `gpt-image-2`，接口地址为：
+
+```text
+https://brookeapi.cloud/v1/images/generations
+```
+
+![在 Codex 中找到生图分组 API Key](/mcp-image2-key.png)
+
+### 2. 准备 MCP 服务
+
+安装 Python 3.10 或更高版本，然后在终端执行：
+
+```bash
+python -m pip install mcp requests
+```
+
+新建文件 `server.py`，填入下面的完整内容。代码使用标准输入输出运行 MCP，并把 `generate_image` 转发到本站的 `/v1/images/generations`。
+
+```python
+import base64
+import os
+from pathlib import Path
+
+import requests
+from mcp.server.fastmcp import FastMCP
+
+
+mcp = FastMCP("brooke_image2")
+BASE_URL = os.getenv("BROOKE_BASE_URL", "https://brookeapi.cloud/v1").rstrip("/")
+API_KEY = os.getenv("BROOKE_API_KEY", "").strip()
+MODEL = os.getenv("BROOKE_IMAGE_MODEL", "gpt-image-2").strip()
+
+
+@mcp.tool()
+def generate_image(prompt: str, size: str = "1024x1024") -> str:
+    """Generate an image through the Hakimi relay and save it locally."""
+    if not API_KEY:
+        raise RuntimeError("BROOKE_API_KEY is not configured")
+
+    response = requests.post(
+        f"{BASE_URL}/images/generations",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": MODEL,
+            "prompt": prompt,
+            "size": size,
+            "n": 1,
+            "response_format": "b64_json",
+        },
+        timeout=300,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    image = payload.get("data", [{}])[0].get("b64_json")
+    if not image:
+        raise RuntimeError("The image API returned no b64_json image")
+
+    output = Path.cwd() / "codex-image-output.png"
+    output.write_bytes(base64.b64decode(image))
+    return f"Image saved to {output}"
+
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+```
+
+### 3. 配置 Codex 的 `config.toml`
+
+把 `C:\Users\你的用户名\.codex\mcp\server.py` 替换为 `server.py` 的实际路径，把 `sk-xxx` 替换成你自己的生图分组 Key：
+
+```toml
+[mcp_servers.brooke_image2]
+command = "python"
+args = ["C:\\Users\\你的用户名\\.codex\\mcp\\server.py"]
+startup_timeout_sec = 120
+
+[mcp_servers.brooke_image2.env]
+BROOKE_BASE_URL = "https://brookeapi.cloud/v1"
+BROOKE_API_KEY = "sk-xxx"
+BROOKE_IMAGE_MODEL = "gpt-image-2"
+```
+
+不要把真实 API Key 提交到 GitHub 或发给他人。保存后完全退出并重新启动 Codex，在 Codex 中执行 `/mcp`，看到 `brooke_image2` 和 `generate_image` 即表示加载成功。
+
+![Codex Image 2 MCP 配置与生图结果示意](/mcp-image2-result.png)
+
+### 4. 效果展示
+
+下面是通过本站 Image 2 生图接口生成的示例效果。实际效果会受到提示词、模型版本和上游服务状态影响：
+
+![Image 2 太空维修场景示例](/mcp-image2-space.jpg)
+
+![Image 2 海上日落场景示例](/mcp-image2-sunset.jpg)
+
+### 5. 测试生图
+
+在 Codex 中直接输入：
+
+```text
+使用 brooke_image2 的 generate_image，生成一张极简风格的红色圆形图标。
+```
+
+如果提示 `401`，检查 API Key 和分组权限；如果提示模型不存在，确认模型广场中的实际模型名称；如果没有看到 MCP，检查 Python 路径、`server.py` 路径和 `config.toml` 格式，然后重启 Codex。
+
+## 七、Claude Code 一键安装与配置
 
 Windows 10 或更高版本可以使用 `lxistired/claude-code-cn-installer`：
 
@@ -137,7 +250,7 @@ Claude Code 使用 Anthropic Messages 协议，请注意：
 - API Key 所属分组必须能够访问所填写的 Claude 模型。
 - 模型名称应以本站模型广场当前显示的名称为准。
 
-## 七、安装 Codex CLI
+## 八、安装 Codex CLI
 
 ### 官方安装脚本
 
@@ -168,7 +281,7 @@ Linux 遇到权限问题时可使用：
 sudo npm install -g @openai/codex
 ```
 
-## 八、启动 Codex
+## 九、启动 Codex
 
 进入项目目录并启动：
 
@@ -185,7 +298,7 @@ codex
 
 如果能够正常返回，且本站使用记录中出现对应调用，说明配置成功。
 
-## 九、常见命令
+## 十、常见命令
 
 | 命令 | 描述 |
 |---|---|
@@ -201,7 +314,7 @@ codex
 | `/mcp` | 查看 MCP 工具状态 |
 | `/quit` | 退出 Codex CLI |
 
-## 十、常见问题
+## 十一、常见问题
 
 ### 配置后不生效
 
@@ -229,7 +342,7 @@ Claude Code 的 `ANTHROPIC_BASE_URL` 应为：
 {{ANTHROPIC_BASE_URL}}
 ```
 
-## 十一、官方参考
+## 十二、官方参考
 
 - [Codex 官方文档](https://developers.openai.com/codex)
 - [Codex 快速开始](https://developers.openai.com/codex/quickstart)

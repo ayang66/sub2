@@ -12,6 +12,22 @@ export interface ImageGenerationResponse {
   data?: Array<{ b64_json?: string; url?: string; revised_prompt?: string }>
 }
 
+export async function editImage(apiKey: string, file: File, payload: { model: string; prompt: string; size?: string; response_format?: 'b64_json' | 'url' }): Promise<ImageGenerationResponse> {
+  const form = new FormData()
+  form.append('image', file)
+  form.append('model', payload.model)
+  form.append('prompt', payload.prompt)
+  if (payload.size) form.append('size', payload.size)
+  if (payload.response_format) form.append('response_format', payload.response_format)
+  const response = await fetch(buildGatewayUrl('/v1/images/edits'), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: form,
+  })
+  if (!response.ok) throw await parseError(response)
+  return response.json()
+}
+
 async function parseError(response: Response): Promise<Error> {
   try {
     const body = await response.json()

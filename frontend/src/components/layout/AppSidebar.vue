@@ -31,6 +31,19 @@
 
     <!-- Navigation -->
     <nav ref="sidebarNavRef" class="sidebar-nav scrollbar-hide">
+      <!-- Unified Sub2 login entry for Open WebUI -->
+      <div class="sidebar-section">
+        <a
+          href="/open-webui"
+          class="sidebar-link mb-1"
+          :class="{ 'sidebar-link-collapsed': sidebarCollapsed }"
+          :title="sidebarCollapsed ? 'Open WebUI' : undefined"
+        >
+          <GlobeIcon class="h-5 w-5 flex-shrink-0" />
+          <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">Open WebUI</span>
+        </a>
+      </div>
+
       <!-- Admin View: Admin menu first, then personal menu -->
       <template v-if="isAdmin">
         <!-- Admin Section -->

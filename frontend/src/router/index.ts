@@ -194,6 +194,12 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/open-webui',
+    name: 'OpenWebUIRedirect',
+    component: () => import('@/views/user/OpenWebUIRedirectView.vue'),
+    meta: { requiresAuth: true, title: 'Open WebUI' }
+  },
+  {
     path: '/keys',
     name: 'Keys',
     component: () => import('@/views/user/KeysView.vue'),

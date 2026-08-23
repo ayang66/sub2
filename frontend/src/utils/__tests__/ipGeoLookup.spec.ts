@@ -71,17 +71,17 @@ describe('fetchOne', () => {
         country_code: 'CN',
         region: 'Guangdong',
         city: 'Shenzhen',
-        success: true,
-        connection: { org: 'AS4134 Chinanet' },
-        timezone: { id: 'Asia/Shanghai' },
-        latitude: 22.5455,
-        longitude: 114.0683,
+        organization: 'AS4134 Chinanet',
+        timezone: 'Asia/Shanghai',
+        accuracy: 10,
+        latitude: '22.5455',
+        longitude: '114.0683',
       }),
     })
 
     await fetchOne('121.35.47.43')
 
-    expect(global.fetch).toHaveBeenCalledWith('https://ipwho.is/121.35.47.43', expect.any(Object))
+    expect(global.fetch).toHaveBeenCalledWith('https://get.geojs.io/v1/ip/geo/121.35.47.43.json')
     const entry = getEntry('121.35.47.43')
     expect(entry.status).toBe('success')
     expect(entry.label).toBe('CN · Guangdong · Shenzhen')
@@ -91,7 +91,7 @@ describe('fetchOne', () => {
   it('marks the entry as error when the response has no country_code', async () => {
     (global.fetch as any).mockResolvedValue({
       ok: true,
-      json: async () => ({ ip: '192.0.2.55', success: false }),
+      json: async () => ({ ip: '192.0.2.55', organization: 'AS64512 Unknown' }),
     })
 
     await fetchOne('192.0.2.55')
@@ -133,14 +133,14 @@ describe('fetchBatch', () => {
   it('deduplicates IPs and skips private addresses without a network call', async () => {
     (global.fetch as any).mockResolvedValue({
       ok: true,
-      json: async () => ({ ip: '203.0.113.10', success: true, country_code: 'US', region: 'Texas', city: 'Dallas' }),
+      json: async () => [{ ip: '203.0.113.10', country_code: 'US', region: 'Texas', city: 'Dallas' }],
     })
 
     await fetchBatch(['203.0.113.10', '203.0.113.10', '10.0.0.5'])
 
     expect(global.fetch).toHaveBeenCalledTimes(1)
     const calledUrl = (global.fetch as any).mock.calls[0][0] as string
-    expect(calledUrl).toBe('https://ipwho.is/203.0.113.10')
+    expect(calledUrl).toContain('ip=203.0.113.10')
     expect(calledUrl).not.toContain('203.0.113.10,203.0.113.10')
     expect(getEntry('10.0.0.5').status).toBe('private')
     expect(getEntry('203.0.113.10').status).toBe('success')
@@ -150,27 +150,33 @@ describe('fetchBatch', () => {
     const ips = Array.from({ length: 61 }, (_, i) => `203.0.${Math.floor(i / 250)}.${(i % 250) + 1}`)
     ;(global.fetch as any).mockImplementation(async (url: string) => ({
       ok: true,
-      json: async () => ({ ip: new URL(url).pathname.split('/').pop(), success: true, country_code: 'US' }),
+      json: async () => {
+        const queried = new URL(url).searchParams.get('ip')!.split(',')
+        return queried.map((ip) => ({ ip, country_code: 'US' }))
+      },
     }))
 
     await fetchBatch(ips)
 
-    expect(global.fetch).toHaveBeenCalledTimes(61)
+    expect(global.fetch).toHaveBeenCalledTimes(2)
+    const firstChunkIps = new URL((global.fetch as any).mock.calls[0][0]).searchParams.get('ip')!.split(',')
+    const secondChunkIps = new URL((global.fetch as any).mock.calls[1][0]).searchParams.get('ip')!.split(',')
+    expect(firstChunkIps.length).toBe(50)
+    expect(secondChunkIps.length).toBe(11)
   })
 
   it('marks individual IPs as error when they are missing from the batch response', async () => {
-    global.fetch = vi.fn(async (url: string) => ({
+    (global.fetch as any).mockResolvedValue({
       ok: true,
-      json: async () => url.endsWith('203.0.113.20')
-        ? { ip: '203.0.113.20', success: true, country_code: 'US' }
-        : { ip: '203.0.113.21', success: false },
-    }))
+      json: async () => [{ ip: '203.0.113.20', country_code: 'US' }],
+    })
 
     const ok = await fetchBatch(['203.0.113.20', '203.0.113.21'])
 
     expect(getEntry('203.0.113.20').status).toBe('success')
     expect(getEntry('203.0.113.21').status).toBe('error')
-    expect(ok).toBe(false)
+    // 响应本身是 200，只是个别 IP 缺失/无法定位，属于业务级失败而非网络级失败
+    expect(ok).toBe(true)
   })
 
   it('returns false when a chunk request fails at the network level', async () => {
@@ -186,18 +192,20 @@ describe('fetchBatch', () => {
   it('skips IPs that already have a cached success entry', async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ ip: '203.0.113.40', success: true, country_code: 'CN' }),
+      json: async () => [{ ip: '203.0.113.40', country_code: 'CN' }],
     })
     await fetchBatch(['203.0.113.40'])
     expect(global.fetch).toHaveBeenCalledTimes(1)
 
     ;(global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ ip: '203.0.113.41', success: true, country_code: 'CN' }),
+      json: async () => [{ ip: '203.0.113.41', country_code: 'CN' }],
     })
     await fetchBatch(['203.0.113.40', '203.0.113.41'])
     expect(global.fetch).toHaveBeenCalledTimes(2)
-    expect((global.fetch as any).mock.calls[1][0]).toBe('https://ipwho.is/203.0.113.41')
+    const secondCallUrl = (global.fetch as any).mock.calls[1][0] as string
+    expect(secondCallUrl).toContain('203.0.113.41')
+    expect(secondCallUrl).not.toContain('203.0.113.40')
   })
 })
 
@@ -239,7 +247,7 @@ describe('ipGeoLookup localStorage persistence', () => {
   it('persists a successful fetch result to localStorage', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ ip: '1.2.4.8', success: true, country_code: 'CN' }),
+      json: async () => ({ ip: '1.2.4.8', country_code: 'CN' }),
     })
     const mod = await import('../ipGeoLookup')
 
@@ -272,7 +280,7 @@ describe('ipGeoLookup localStorage persistence', () => {
     vi.setSystemTime(now)
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ ip: '8.8.8.8', success: true, country_code: 'US' }),
+      json: async () => ({ ip: '8.8.8.8', country_code: 'US' }),
     })
     const mod = await import('../ipGeoLookup')
 

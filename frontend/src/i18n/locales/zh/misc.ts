@@ -74,6 +74,7 @@ export default {
     description: '每张兑换码10元，付款后由链动小铺自动发货',
     redeemNow: '去兑换',
     openInNewTab: '新窗口打开',
+    redirecting: '正在打开链动小铺...',
     iframeTitle: '链动小铺10元兑换码'
   },
 

@@ -93,22 +93,17 @@
           </div>
         </div>
 
-        <!-- Iframe embed mode -->
+        <!-- External page mode: some upstream pages forbid iframe embedding. -->
         <div v-else class="custom-embed-shell">
           <a
             :href="embeddedUrl"
-            target="_blank"
+            target="_self"
             rel="noopener noreferrer"
-            class="btn btn-secondary btn-sm custom-open-fab"
+            class="flex h-full min-h-[240px] flex-col items-center justify-center gap-4 p-10 text-center text-gray-900 transition-colors hover:text-primary-600 dark:text-white dark:hover:text-primary-400"
           >
-            <Icon name="externalLink" size="sm" class="mr-1.5" :stroke-width="2" />
-            {{ t('customPage.openInNewTab') }}
+            <Icon name="externalLink" size="lg" :stroke-width="2" />
+            <span class="text-base font-medium">进入 DEEIX Chat</span>
           </a>
-          <iframe
-            :src="embeddedUrl"
-            class="custom-embed-frame"
-            allowfullscreen
-          ></iframe>
         </div>
       </div>
     </div>

@@ -76,6 +76,7 @@ export default {
     description: 'Each code costs CNY 10 and is delivered automatically by Liandong Shop after payment',
     redeemNow: 'Redeem Code',
     openInNewTab: 'Open in new tab',
+    redirecting: 'Opening Liandong Shop...',
     iframeTitle: 'Liandong Shop CNY 10 Redeem Code'
   },
 

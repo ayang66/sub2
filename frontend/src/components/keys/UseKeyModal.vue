@@ -793,12 +793,12 @@ const currentFiles = computed((): FileConfig[] => {
       if (activeClientTab.value === 'codex') {
         return generateRoutedCodexFiles(apiBase, apiKey, 'deepseek')
       }
-      return generateAnthropicFiles(baseRoot, apiKey)
+      return generateAnthropicFiles(baseUrl, apiKey)
     case 'composite':
       if (activeClientTab.value === 'codex') {
         return generateRoutedCodexFiles(apiBase, apiKey, 'composite')
       }
-      return generateAnthropicFiles(baseRoot, apiKey)
+      return generateAnthropicFiles(baseUrl, apiKey)
     default:
       if (activeClientTab.value === 'codex' && props.platform) {
         return generateRoutedCodexFiles(apiBase, apiKey, props.platform)

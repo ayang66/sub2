@@ -88,7 +88,7 @@
           :placeholder="promptInputPlaceholder"
           :hint="promptInputHint"
           :disabled="status === 'connecting'"
-          rows="3"
+          :rows="supportsImageTest || supportsGrokVideoTest || grokTestMode === 'image' || grokTestMode === 'video' ? 3 : 2"
         />
       </div>
       <p
@@ -498,9 +498,10 @@ const modelOptionsForMode = computed(() => {
 
 const supportsPromptInput = computed(() => {
   if (!isGrokAccount.value) {
-    return supportsImageTest.value
+    return true
   }
   return (
+    grokTestMode.value === 'text' ||
     grokTestMode.value === 'image' ||
     grokTestMode.value === 'video' ||
     grokTestMode.value === 'search' ||
@@ -609,7 +610,7 @@ const promptInputLabel = computed(() => {
   if (grokTestMode.value === 'tts') {
     return t('admin.accounts.grok.ttsTextLabel')
   }
-  return t('admin.accounts.imagePromptLabel')
+  return t('admin.accounts.customPromptLabel')
 })
 
 const promptInputPlaceholder = computed(() => {
@@ -625,7 +626,7 @@ const promptInputPlaceholder = computed(() => {
   if (grokTestMode.value === 'tts') {
     return t('admin.accounts.grok.ttsTextPlaceholder')
   }
-  return ''
+  return t('admin.accounts.customPromptPlaceholder')
 })
 
 const promptInputHint = computed(() => {
@@ -647,7 +648,7 @@ const promptInputHint = computed(() => {
   if (grokTestMode.value === 'realtime') {
     return t('admin.accounts.grok.realtimeTestHint')
   }
-  return ''
+  return t('admin.accounts.customPromptHint')
 })
 
 const testModeSummary = computed(() => {
@@ -670,7 +671,7 @@ const testModeSummary = computed(() => {
     }
   }
   if (supportsImageTest.value) return t('admin.accounts.imageTestMode')
-  return t('admin.accounts.testPrompt')
+  return t('admin.accounts.testPrompt', { prompt: testPrompt.value.trim() || 'hi' })
 })
 
 const canStartTest = computed(() => {
@@ -969,10 +970,10 @@ const handleEvent = (event: {
                     ? t('admin.accounts.grok.sendingSTTRequest')
                     : grokTestMode.value === 'realtime'
                       ? t('admin.accounts.grok.sendingRealtimeRequest')
-                      : t('admin.accounts.sendingTestMessage')
+                      : t('admin.accounts.sendingTestMessage', { prompt: testPrompt.value.trim() || 'hi' })
           : supportsImageTest.value
             ? t('admin.accounts.sendingImageRequest')
-            : t('admin.accounts.sendingTestMessage'),
+            : t('admin.accounts.sendingTestMessage', { prompt: testPrompt.value.trim() || 'hi' }),
         'text-gray-400'
       )
       addLine('', 'text-gray-300')

@@ -417,6 +417,11 @@ export default {
       error: 'Error',
       unknown: '-'
     },
+    checkMode: {
+      probe: 'Active Probe',
+      quota: 'Quota Only',
+      quota_probe: 'Probe + Quota'
+    },
     providers: {
       openai: 'OpenAI',
       anthropic: 'Anthropic',

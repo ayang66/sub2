@@ -422,6 +422,11 @@ export default {
       error: '错误',
       unknown: '-'
     },
+    checkMode: {
+      probe: '主动探测',
+      quota: '配额查询',
+      quota_probe: '探测 + 配额'
+    },
     providers: {
       openai: 'OpenAI',
       anthropic: 'Anthropic',

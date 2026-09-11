@@ -426,7 +426,11 @@ export default {
       openai: 'OpenAI',
       anthropic: 'Anthropic',
       gemini: 'Gemini',
-      grok: 'Grok'
+      grok: 'Grok',
+      antigravity: 'Antigravity',
+      kimi: 'Kimi',
+      zhipu: '智谱',
+      deepseek: 'DeepSeek'
     },
     extraModelsHeader: '附加模型',
     extraModelsEmpty: '无附加模型',
@@ -559,7 +563,10 @@ export default {
       perRequest: '每次请求',
       contextPricing: '按上下文区间定价',
       contextTokens: '上下文 Token',
-      infinity: '∞'
+      infinity: '∞',
+      timePricing: '高峰时段计价',
+      timePricingWeekdays: '仅工作日（周一至周五）',
+      timePricingEveryday: '每日生效'
     }
   },
 

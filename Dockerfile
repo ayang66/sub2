@@ -16,6 +16,30 @@ ARG GOSUMDB=sum.golang.google.cn
 ARG NPM_CONFIG_REGISTRY=
 
 # -----------------------------------------------------------------------------
+# Codex local setup helper builder
+# -----------------------------------------------------------------------------
+FROM --platform=${BUILDPLATFORM} ${GOLANG_IMAGE} AS codex-helper-builder
+
+WORKDIR /src
+COPY tools/codex-local-setup/ ./
+RUN apk add --no-cache zip && \
+    mkdir -p /out/macos-arm64 /out/macos-amd64 /out/linux-amd64 /out/linux-arm64 && \
+    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/codex-local-setup-windows-amd64.exe . && \
+    CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o /out/codex-local-setup-windows-arm64.exe . && \
+    CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o /out/macos-arm64/codex-local-setup . && \
+    printf '%s\n' '#!/bin/sh' 'DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"' 'exec "$DIR/codex-local-setup"' > /out/macos-arm64/start.command && \
+    chmod +x /out/macos-arm64/start.command && \
+    (cd /out/macos-arm64 && zip -q -r /out/codex-local-setup-macos-arm64.zip .) && \
+    CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/macos-amd64/codex-local-setup . && \
+    printf '%s\n' '#!/bin/sh' 'DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"' 'exec "$DIR/codex-local-setup"' > /out/macos-amd64/start.command && \
+    chmod +x /out/macos-amd64/start.command && \
+    (cd /out/macos-amd64 && zip -q -r /out/codex-local-setup-macos-amd64.zip .) && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/linux-amd64/codex-local-setup . && \
+    tar -C /out/linux-amd64 -czf /out/codex-local-setup-linux-amd64.tar.gz codex-local-setup && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o /out/linux-arm64/codex-local-setup . && \
+    tar -C /out/linux-arm64 -czf /out/codex-local-setup-linux-arm64.tar.gz codex-local-setup
+
+# -----------------------------------------------------------------------------
 # Stage 1: Frontend Builder
 # -----------------------------------------------------------------------------
 # --platform=$BUILDPLATFORM: the frontend output is JS (arch-neutral), so build
@@ -41,6 +65,7 @@ RUN --mount=type=cache,id=sub2api-pnpm-store,target=/root/.local/share/pnpm/stor
 # Copy only that subtree to keep the build dependency minimal.
 COPY frontend/ ./
 COPY docs/legal/ /app/docs/legal/
+COPY --from=codex-helper-builder /out/ ./public/downloads/codex-setup/
 RUN pnpm run build
 
 # -----------------------------------------------------------------------------

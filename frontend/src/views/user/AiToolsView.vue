@@ -22,6 +22,9 @@
               <a :href="CCSWITCH_MSI_URL" target="_blank" rel="noreferrer" class="tool-button tool-button-secondary">
                 <DownloadIcon class="h-4 w-4" />下载 CC Switch
               </a>
+              <router-link to="/codex-setup" class="tool-button tool-button-primary">
+                <CogIcon class="h-4 w-4" />Codex 一键配置
+              </router-link>
               <router-link to="/guide" class="tool-button tool-button-quiet">
                 <DocumentIcon class="h-4 w-4" />查看配置文档
               </router-link>
@@ -132,12 +135,12 @@ const codexConfig = computed(() => `cli_auth_credentials_store = "file"
 
 disable_response_storage = true
 model = "gpt-5.5"
-model_provider = "hakimi"
+model_provider = "custom"
 model_reasoning_effort = "xhigh"
 personality = "friendly"
 
-[model_providers.hakimi]
-name = "hakimi"
+[model_providers.custom]
+name = "Hakimi"
 base_url = "${openAiBaseUrl.value}"
 requires_openai_auth = true
 wire_api = "responses"`)

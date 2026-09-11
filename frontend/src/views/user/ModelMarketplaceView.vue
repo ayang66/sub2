@@ -109,6 +109,13 @@
                   >
                     {{ t('modelMarketplace.recommended') }}
                   </span>
+                  <span
+                    v-if="hasTimePricing(offer)"
+                    class="rounded-md border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[11px] font-medium text-orange-700 dark:border-orange-700/60 dark:bg-orange-900/20 dark:text-orange-300"
+                    :title="timePricingSummary(offer)"
+                  >
+                    {{ t('modelMarketplace.timePricing') }}
+                  </span>
                 </div>
                 <p class="mt-1 truncate text-[11px] text-gray-400">
                   {{ compactPrice(offer) }}
@@ -195,6 +202,29 @@
           </div>
         </div>
         <p v-else class="py-6 text-center text-sm text-gray-400">{{ t('modelMarketplace.noPricing') }}</p>
+
+        <!-- 分时 / 高峰时段计价规则说明 -->
+        <div v-if="selectedTimePricing" class="mt-4 rounded-lg border border-orange-200 bg-orange-50/60 p-3.5 dark:border-orange-800/50 dark:bg-orange-950/20">
+          <div class="flex items-center gap-2 text-xs font-semibold text-orange-800 dark:text-orange-300">
+            <Icon name="clock" size="sm" />
+            <span>{{ t('modelMarketplace.timePricing') }}</span>
+            <span class="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+              {{ selectedTimePricing.weekdays_only ? t('modelMarketplace.timePricingWeekdays') : t('modelMarketplace.timePricingEveryday') }}
+            </span>
+          </div>
+          <div class="mt-2 space-y-1.5">
+            <div
+              v-for="(period, idx) in selectedTimePricing.periods"
+              :key="idx"
+              class="flex items-center justify-between text-xs text-orange-900 dark:text-orange-200"
+            >
+              <span>{{ formatTimePeriod(period) }}</span>
+              <span class="font-medium font-mono text-orange-700 dark:text-orange-300">
+                x{{ period.multiplier }} ({{ formatRate(selectedOffer.effectiveRate * period.multiplier) }})
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </BaseDialog>
   </AppLayout>
@@ -411,6 +441,32 @@ function marketplaceModelRank(model: string): number {
 
 function isRecommendedOffer(offer: MarketOffer): boolean {
   return offer.group.name === 'Codex Plus'
+}
+
+function hasTimePricing(offer: MarketOffer): boolean {
+  const tp = offer.model.pricing?.time_pricing
+  return Boolean(tp && tp.periods && tp.periods.length > 0)
+}
+
+function timePricingSummary(offer: MarketOffer): string {
+  const tp = offer.model.pricing?.time_pricing
+  if (!tp || !tp.periods.length) return ''
+  const scope = tp.weekdays_only ? t('modelMarketplace.timePricingWeekdays') : t('modelMarketplace.timePricingEveryday')
+  const periodsStr = tp.periods.map(formatTimePeriod).join('、')
+  return `${scope} ${periodsStr}`
+}
+
+const selectedTimePricing = computed(() => {
+  const tp = selectedOffer.value?.model.pricing?.time_pricing
+  if (tp && tp.periods && tp.periods.length > 0) {
+    return tp
+  }
+  return null
+})
+
+function formatTimePeriod(p: { start_time: string; end_time: string; multiplier: number }): string {
+  const clock = (v: string) => v.replace(/^(\d{2}:\d{2}):00$/, '$1')
+  return `${clock(p.start_time)} - ${clock(p.end_time)} (${p.multiplier}x)`
 }
 
 function displayModelName(model: string): string {

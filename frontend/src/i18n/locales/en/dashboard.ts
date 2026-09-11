@@ -421,7 +421,11 @@ export default {
       openai: 'OpenAI',
       anthropic: 'Anthropic',
       gemini: 'Gemini',
-      grok: 'Grok'
+      grok: 'Grok',
+      antigravity: 'Antigravity',
+      kimi: 'Kimi',
+      zhipu: 'Zhipu',
+      deepseek: 'DeepSeek'
     },
     extraModelsHeader: 'Extra Models',
     extraModelsEmpty: 'No extra models',
@@ -554,7 +558,10 @@ export default {
       perRequest: 'Per Request',
       contextPricing: 'Context-tiered pricing',
       contextTokens: 'Context Tokens',
-      infinity: '∞'
+      infinity: '∞',
+      timePricing: 'Peak Hours Pricing',
+      timePricingWeekdays: 'Weekdays Only (Mon-Fri)',
+      timePricingEveryday: 'Everyday'
     }
   },
 

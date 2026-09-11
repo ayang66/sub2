@@ -40,6 +40,18 @@ export interface UserPricingInterval {
   per_request_price: number | null
 }
 
+export interface UserTimePricingPeriod {
+  start_time: string
+  end_time: string
+  multiplier: number
+}
+
+export interface UserTimePricing {
+  timezone: string
+  weekdays_only?: boolean
+  periods: UserTimePricingPeriod[]
+}
+
 export interface UserSupportedModelPricing {
   billing_mode: BillingMode
   input_price: number | null
@@ -52,6 +64,7 @@ export interface UserSupportedModelPricing {
   image_output_price: number | null
   per_request_price: number | null
   intervals: UserPricingInterval[]
+  time_pricing?: UserTimePricing
 }
 
 export interface UserSupportedModel {

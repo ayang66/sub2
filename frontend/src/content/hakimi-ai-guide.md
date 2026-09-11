@@ -65,12 +65,12 @@ cli_auth_credentials_store = "file"
 
 disable_response_storage = true
 model = "gpt-5.5"
-model_provider = "hakimi"
+model_provider = "custom"
 model_reasoning_effort = "xhigh"
 personality = "friendly"
 
-[model_providers.hakimi]
-name = "hakimi"
+[model_providers.custom]
+name = "Hakimi"
 base_url = "{{OPENAI_BASE_URL}}"
 requires_openai_auth = true
 wire_api = "responses"

@@ -83,6 +83,21 @@ type userSupportedModelPricing struct {
 	ImageOutputPrice             *float64                 `json:"image_output_price"`
 	PerRequestPrice              *float64                 `json:"per_request_price"`
 	Intervals                    []userPricingIntervalDTO `json:"intervals"`
+	TimePricing                  *userTimePricingDTO      `json:"time_pricing,omitempty"`
+}
+
+// userTimePricingPeriodDTO 分时时段。
+type userTimePricingPeriodDTO struct {
+	StartTime  string  `json:"start_time"`
+	EndTime    string  `json:"end_time"`
+	Multiplier float64 `json:"multiplier"`
+}
+
+// userTimePricingDTO 分时倍率。
+type userTimePricingDTO struct {
+	Timezone     string                     `json:"timezone"`
+	WeekdaysOnly bool                       `json:"weekdays_only,omitempty"`
+	Periods      []userTimePricingPeriodDTO `json:"periods"`
 }
 
 // userPricingIntervalDTO 定价区间白名单（去掉内部 ID、SortOrder 等前端不渲染的字段）。
@@ -347,5 +362,25 @@ func toUserPricing(p *service.ChannelModelPricing) *userSupportedModelPricing {
 		ImageOutputPrice:             p.ImageOutputPrice,
 		PerRequestPrice:              p.PerRequestPrice,
 		Intervals:                    intervals,
+		TimePricing:                  toUserTimePricing(p.TimePricing),
+	}
+}
+
+func toUserTimePricing(p *service.ChannelTimePricing) *userTimePricingDTO {
+	if p == nil || len(p.Periods) == 0 {
+		return nil
+	}
+	periods := make([]userTimePricingPeriodDTO, 0, len(p.Periods))
+	for _, period := range p.Periods {
+		periods = append(periods, userTimePricingPeriodDTO{
+			StartTime:  period.StartTime,
+			EndTime:    period.EndTime,
+			Multiplier: period.Multiplier,
+		})
+	}
+	return &userTimePricingDTO{
+		Timezone:     p.Timezone,
+		WeekdaysOnly: p.WeekdaysOnly,
+		Periods:      periods,
 	}
 }

@@ -204,24 +204,32 @@
         <p v-else class="py-6 text-center text-sm text-gray-400">{{ t('modelMarketplace.noPricing') }}</p>
 
         <!-- 分时 / 高峰时段计价规则说明 -->
-        <div v-if="selectedTimePricing" class="mt-4 rounded-lg border border-orange-200 bg-orange-50/60 p-3.5 dark:border-orange-800/50 dark:bg-orange-950/20">
-          <div class="flex items-center gap-2 text-xs font-semibold text-orange-800 dark:text-orange-300">
-            <Icon name="clock" size="sm" />
-            <span>{{ t('modelMarketplace.timePricing') }}</span>
-            <span class="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+        <div v-if="selectedTimePricing" class="mt-4 rounded-lg border border-orange-200 bg-orange-50/70 p-3.5 dark:border-orange-800/50 dark:bg-orange-950/20">
+          <div class="flex items-center justify-between border-b border-orange-200/60 pb-2.5 text-xs dark:border-orange-800/40">
+            <div class="flex items-center gap-1.5 font-medium text-orange-900 dark:text-orange-200">
+              <Icon name="clock" size="sm" class="text-orange-600 dark:text-orange-400" />
+              <span>{{ t('modelMarketplace.timePricing') }}</span>
+            </div>
+            <span class="rounded-md border border-orange-200 bg-white px-2 py-0.5 text-[11px] font-medium text-orange-700 dark:border-orange-800 dark:bg-dark-800 dark:text-orange-300">
               {{ selectedTimePricing.weekdays_only ? t('modelMarketplace.timePricingWeekdays') : t('modelMarketplace.timePricingEveryday') }}
             </span>
           </div>
-          <div class="mt-2 space-y-1.5">
+          <div class="mt-2.5 divide-y divide-orange-100 dark:divide-orange-900/30">
             <div
               v-for="(period, idx) in selectedTimePricing.periods"
               :key="idx"
-              class="flex items-center justify-between text-xs text-orange-900 dark:text-orange-200"
+              class="flex items-center justify-between py-1.5 text-xs text-orange-950 dark:text-orange-200"
             >
-              <span>{{ formatTimePeriod(period) }}</span>
-              <span class="font-medium font-mono text-orange-700 dark:text-orange-300">
-                x{{ period.multiplier }} ({{ formatRate(selectedOffer.effectiveRate * period.multiplier) }})
-              </span>
+              <div class="flex items-center gap-2">
+                <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
+                <span class="font-medium font-mono">{{ formatTimeRange(period) }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-right">
+                <span class="text-[11px] text-orange-600 dark:text-orange-400">高峰 {{ period.multiplier }}x</span>
+                <span class="rounded bg-orange-100 px-1.5 py-0.5 text-[11px] font-semibold text-orange-800 dark:bg-orange-900/60 dark:text-orange-200">
+                  实付 x{{ formatRate(selectedOffer.effectiveRate * period.multiplier) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -464,9 +472,13 @@ const selectedTimePricing = computed(() => {
   return null
 })
 
-function formatTimePeriod(p: { start_time: string; end_time: string; multiplier: number }): string {
+function formatTimeRange(p: { start_time: string; end_time: string }): string {
   const clock = (v: string) => v.replace(/^(\d{2}:\d{2}):00$/, '$1')
-  return `${clock(p.start_time)} - ${clock(p.end_time)} (${p.multiplier}x)`
+  return `${clock(p.start_time)} - ${clock(p.end_time)}`
+}
+
+function formatTimePeriod(p: { start_time: string; end_time: string; multiplier: number }): string {
+  return `${formatTimeRange(p)} (${p.multiplier}x)`
 }
 
 function displayModelName(model: string): string {

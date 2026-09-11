@@ -541,6 +541,9 @@ export default {
     noPricing: 'Pricing not configured',
     pricingTitle: 'Full Pricing',
     recommended: 'Recommended',
+    timePricing: 'Peak Hours Pricing',
+    timePricingWeekdays: 'Weekdays (Mon-Fri)',
+    timePricingEveryday: 'Everyday',
     types: {
       chat: 'Chat Models',
       image: 'Image Models'

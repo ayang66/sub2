@@ -546,6 +546,9 @@ export default {
     noPricing: '暂未配置价格',
     pricingTitle: '完整价格',
     recommended: '推荐',
+    timePricing: '高峰时段计价',
+    timePricingWeekdays: '工作日（周一至周五）',
+    timePricingEveryday: '每日生效',
     types: {
       chat: '对话模型',
       image: '生图模型'

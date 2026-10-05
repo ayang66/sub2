@@ -2738,8 +2738,37 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 
 	// Handle Antigravity accounts: return Claude + Gemini models
 	if account.Platform == service.PlatformAntigravity {
-		// 直接复用 antigravity.DefaultModels()，与 /v1/models 端点保持同步
-		response.Success(c, antigravity.DefaultModels())
+		defaultModels := antigravity.DefaultModels()
+		mapping, _ := account.Credentials["model_mapping"].(map[string]any)
+		if len(mapping) == 0 {
+			response.Success(c, defaultModels)
+			return
+		}
+
+		defaultByID := make(map[string]antigravity.ClaudeModel, len(defaultModels))
+		for _, model := range defaultModels {
+			defaultByID[model.ID] = model
+		}
+		requestedModels := make([]string, 0, len(mapping))
+		for requestedModel, target := range mapping {
+			if targetModel, ok := target.(string); ok && strings.TrimSpace(targetModel) != "" {
+				requestedModels = append(requestedModels, requestedModel)
+			}
+		}
+		sort.Strings(requestedModels)
+		models := make([]antigravity.ClaudeModel, 0, len(requestedModels))
+		for _, requestedModel := range requestedModels {
+			if model, found := defaultByID[requestedModel]; found {
+				models = append(models, model)
+				continue
+			}
+			models = append(models, antigravity.ClaudeModel{
+				ID:          requestedModel,
+				Type:        "model",
+				DisplayName: requestedModel,
+			})
+		}
+		response.Success(c, models)
 		return
 	}
 

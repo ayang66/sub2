@@ -138,3 +138,25 @@ func TestResponsesToAnthropic_DefaultToolNormalizesInputSchema(t *testing.T) {
 	assert.Equal(t, "shell", tools[0].Name)
 	assert.JSONEq(t, `{"type":"object","properties":{}}`, string(tools[0].InputSchema))
 }
+
+func TestResponsesToAnthropic_WebSearchAliasesWithFunctionTools(t *testing.T) {
+	for _, toolType := range []string{"web_search", "web_search_preview", "google_search", "web_search_20250305"} {
+		t.Run(toolType, func(t *testing.T) {
+			req := &ResponsesRequest{
+				Model: "gemini-3.8-flash",
+				Input: json.RawMessage(`"Call get_weather"`),
+				Tools: []ResponsesTool{
+					{Type: "function", Name: "get_weather", Parameters: json.RawMessage(`{"type":"object","properties":{}}`)},
+					{Type: toolType},
+				},
+			}
+			converted, err := ResponsesToAnthropicRequest(req)
+			require.NoError(t, err)
+			require.Len(t, converted.Tools, 2)
+			assert.Equal(t, "get_weather", converted.Tools[0].Name)
+			assert.Equal(t, "web_search_20250305", converted.Tools[1].Type)
+			assert.Equal(t, "web_search", converted.Tools[1].Name)
+			assert.Empty(t, converted.Tools[1].InputSchema)
+		})
+	}
+}

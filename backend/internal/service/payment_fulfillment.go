@@ -113,7 +113,72 @@ func (s *PaymentService) confirmPayment(ctx context.Context, oid int64, tradeNo 
 		s.writeAuditLog(ctx, o.ID, "PAYMENT_AMOUNT_MISMATCH", pk, map[string]any{"expected": o.PayAmount, "paid": paid, "tradeNo": tradeNo})
 		return fmt.Errorf("amount mismatch: expected %s, got %s", strconv.FormatFloat(o.PayAmount, 'f', -1, 64), strconv.FormatFloat(paid, 'f', -1, 64))
 	}
+	if payment.GetBasePaymentType(pk) == payment.TypeEasyPay {
+		if err := s.confirmEasyPayUpstream(ctx, o, tradeNo, paid, pk); err != nil {
+			return err
+		}
+	}
 	return s.toPaid(ctx, o, tradeNo, paid, pk)
+}
+
+func (s *PaymentService) confirmEasyPayUpstream(ctx context.Context, o *dbent.PaymentOrder, tradeNo string, paid float64, pk string) error {
+	notifiedTradeNo := strings.TrimSpace(tradeNo)
+	if notifiedTradeNo == "" {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_TRADE_MISMATCH", pk, map[string]any{
+			"reason": "missing trade number",
+		})
+		return fmt.Errorf("easypay notification missing trade number")
+	}
+	prov, err := s.getOrderProvider(ctx, o)
+	if err != nil || prov == nil || payment.GetBasePaymentType(prov.ProviderKey()) != payment.TypeEasyPay {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_UNCONFIRMED", pk, map[string]any{
+			"reason": "provider unavailable",
+		})
+		if err != nil {
+			return fmt.Errorf("easypay upstream confirmation unavailable: %w", err)
+		}
+		return fmt.Errorf("easypay upstream confirmation unavailable")
+	}
+	queryRef := strings.TrimSpace(o.OutTradeNo)
+	if queryRef == "" {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_UNCONFIRMED", pk, map[string]any{
+			"reason": "missing order reference",
+		})
+		return fmt.Errorf("easypay upstream confirmation missing order reference")
+	}
+	resp, err := prov.QueryOrder(ctx, queryRef)
+	if err != nil || resp == nil {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_UNCONFIRMED", pk, map[string]any{
+			"reason": "query failed",
+		})
+		if err != nil {
+			return fmt.Errorf("easypay upstream query failed: %w", err)
+		}
+		return fmt.Errorf("easypay upstream query failed")
+	}
+	if resp.Status != payment.ProviderStatusPaid {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_NOT_PAID", pk, map[string]any{
+			"status": resp.Status,
+		})
+		return fmt.Errorf("easypay upstream order is not paid")
+	}
+	tolerance := paymentAmountToleranceForCurrency(PaymentOrderCurrency(o))
+	if !isValidProviderAmount(resp.Amount) || math.Abs(resp.Amount-o.PayAmount) > tolerance || math.Abs(resp.Amount-paid) > tolerance {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_AMOUNT_MISMATCH", pk, map[string]any{
+			"expected": o.PayAmount,
+			"notified": paid,
+			"upstream": resp.Amount,
+		})
+		return fmt.Errorf("easypay upstream amount mismatch")
+	}
+	upstreamTradeNo := strings.TrimSpace(resp.TradeNo)
+	if upstreamTradeNo == "" || upstreamTradeNo == queryRef || upstreamTradeNo != notifiedTradeNo {
+		s.writeAuditLog(ctx, o.ID, "PAYMENT_UPSTREAM_TRADE_MISMATCH", pk, map[string]any{
+			"reason": "trade number mismatch",
+		})
+		return fmt.Errorf("easypay upstream trade number mismatch")
+	}
+	return nil
 }
 
 func paymentAmountToleranceForCurrency(currency string) float64 {

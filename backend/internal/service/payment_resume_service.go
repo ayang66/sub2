@@ -245,6 +245,9 @@ func CanonicalizeReturnURL(raw string, srcHost string, srcURL string) (string, e
 		return "", infraerrors.BadRequest("INVALID_RETURN_URL", "return_url must use http or https")
 	}
 	parsed.Fragment = ""
+	// Caller-supplied query values are not a legitimate part of the return
+	// target. The server adds its own query when building the signed URL.
+	parsed.RawQuery = ""
 	if parsed.Path == "" {
 		parsed.Path = "/"
 	}
@@ -287,8 +290,9 @@ func buildPaymentReturnURL(base string, orderID int64, outTradeNo string, resume
 		return "", infraerrors.BadRequest("INVALID_RETURN_URL", "return_url must be a valid absolute URL")
 	}
 	parsed.Fragment = ""
+	parsed.RawQuery = ""
 
-	query := parsed.Query()
+	query := url.Values{}
 	if orderID > 0 {
 		query.Set("order_id", strconv.FormatInt(orderID, 10))
 	}

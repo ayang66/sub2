@@ -368,19 +368,48 @@ func (e *EasyPay) QueryOrder(ctx context.Context, tradeNo string) (*payment.Quer
 	}, nil
 }
 
+// easyPayNotifyAllowedParams is the fixed EasyPay async-notify field set.
+// Anything else is rejected before the signature is checked.
+var easyPayNotifyAllowedParams = map[string]struct{}{
+	"pid":          {},
+	"trade_no":     {},
+	"out_trade_no": {},
+	"type":         {},
+	"name":         {},
+	"money":        {},
+	"trade_status": {},
+	"param":        {},
+	"sign":         {},
+	"sign_type":    {},
+}
+
 func (e *EasyPay) VerifyNotification(_ context.Context, rawBody string, _ map[string]string) (*payment.PaymentNotification, error) {
 	values, err := url.ParseQuery(rawBody)
 	if err != nil {
 		return nil, fmt.Errorf("parse notify: %w", err)
 	}
-	// url.ParseQuery already decodes values — no additional decode needed.
-	params := make(map[string]string)
-	for k := range values {
-		params[k] = values.Get(k)
+	params := make(map[string]string, len(values))
+	for k, items := range values {
+		if _, ok := easyPayNotifyAllowedParams[k]; !ok {
+			return nil, fmt.Errorf("unexpected notify param: %s", k)
+		}
+		if len(items) != 1 {
+			return nil, fmt.Errorf("duplicate notify param: %s", k)
+		}
+		params[k] = items[0]
 	}
-	sign := params["sign"]
+	sign := strings.TrimSpace(params["sign"])
 	if sign == "" {
 		return nil, fmt.Errorf("missing sign")
+	}
+	if signType := strings.TrimSpace(params["sign_type"]); signType != "" && !strings.EqualFold(signType, signTypeMD5) {
+		return nil, fmt.Errorf("unsupported sign_type")
+	}
+	if strings.TrimSpace(params["trade_no"]) == "" {
+		return nil, fmt.Errorf("missing trade_no")
+	}
+	if strings.TrimSpace(params["out_trade_no"]) == "" {
+		return nil, fmt.Errorf("missing out_trade_no")
 	}
 	if !easyPayVerifySign(params, e.config["pkey"], sign) {
 		return nil, fmt.Errorf("invalid signature")

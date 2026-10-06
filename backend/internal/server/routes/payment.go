@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/Wei-Shaw/sub2api/internal/handler"
 	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
@@ -14,7 +16,7 @@ import (
 func RegisterPaymentRoutes(
 	v1 *gin.RouterGroup,
 	paymentHandler *handler.PaymentHandler,
-	webhookHandler *handler.PaymentWebhookHandler,
+	_ *handler.PaymentWebhookHandler,
 	adminPaymentHandler *admin.PaymentHandler,
 	jwtAuth middleware.JWTAuthMiddleware,
 	adminAuth middleware.AdminAuthMiddleware,
@@ -56,17 +58,7 @@ func RegisterPaymentRoutes(
 		public.POST("/orders/resolve", paymentHandler.ResolveOrderPublicByResumeToken)
 	}
 
-	// --- Webhook endpoints (no auth) ---
-	webhook := v1.Group("/payment/webhook")
-	{
-		// EasyPay sends GET callbacks with query params
-		webhook.GET("/easypay", webhookHandler.EasyPayNotify)
-		webhook.POST("/easypay", webhookHandler.EasyPayNotify)
-		webhook.POST("/alipay", webhookHandler.AlipayNotify)
-		webhook.POST("/wxpay", webhookHandler.WxpayNotify)
-		webhook.POST("/stripe", webhookHandler.StripeWebhook)
-		webhook.POST("/airwallex", webhookHandler.AirwallexWebhook)
-	}
+	registerDisabledPaymentWebhooks(v1)
 
 	// --- Admin payment endpoints (admin auth) ---
 	adminGroup := v1.Group("/admin/payment")
@@ -110,4 +102,16 @@ func RegisterPaymentRoutes(
 			providers.DELETE("/:id", adminPaymentHandler.DeleteProvider)
 		}
 	}
+}
+
+func registerDisabledPaymentWebhooks(v1 *gin.RouterGroup) {
+	// This installation uses redeem codes only; never dispatch payment callbacks.
+	disabled := func(c *gin.Context) {
+		c.AbortWithStatusJSON(http.StatusGone, gin.H{
+			"code":    "PAYMENT_CALLBACKS_DISABLED",
+			"message": "Online payment callbacks are disabled",
+		})
+	}
+	v1.Any("/payment/webhook", disabled)
+	v1.Any("/payment/webhook/*provider", disabled)
 }

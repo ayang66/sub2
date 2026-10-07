@@ -67,6 +67,65 @@ const TIER_RANK: Record<AbilityTier, number> = {
   media: 4,
 }
 
+// Artificial Analysis Intelligence Index integers, highest published reasoning setting.
+// Captured 2026-10-08 from https://artificialanalysis.ai/leaderboards/models.
+// Only scores present on that leaderboard are listed. Unlisted models keep a tier baseline.
+const TIER_ABILITY_BASELINE: Record<AbilityTier, number> = {
+  flagship: 21,
+  strong: 14,
+  balanced: 8,
+  light: 3,
+  media: 0,
+}
+
+const INTELLIGENCE_RULES: Array<{ pattern: RegExp; score: number }> = [
+  { pattern: /^claude-opus-5-5(?:-|$)/, score: 58 },
+  { pattern: /^claude-sonnet-5-5(?:-|$)/, score: 56 },
+  { pattern: /^claude-fable-5-1(?:-|$)/, score: 53 },
+  { pattern: /^gpt-6-astra(?:-|$)/, score: 53 },
+  { pattern: /^gpt-6-1-sol(?:-|$)/, score: 52 },
+  { pattern: /^grok-4-7(?:-|$)/, score: 46 },
+  { pattern: /^qwen3-8-max(?:-|$)/, score: 45 },
+  { pattern: /^glm-5-3-flash(?:-|$)/, score: 42 },
+  { pattern: /^glm-5-3$/, score: 45 },
+  { pattern: /^kimi-k3(?:-|$)/, score: 44 },
+  { pattern: /^claude-haiku-5-5(?:-|$)/, score: 43 },
+  { pattern: /^gpt-5-6-terra(?:-|$)/, score: 42 },
+  { pattern: /^gemini-3-8-flash(?:-|$)/, score: 41 },
+  { pattern: /^gpt-6-luna(?:-|$)/, score: 38 },
+  { pattern: /^deepseek-v4-1-flash(?:-|$)/, score: 39 },
+  { pattern: /^deepseek-v4-pro-0813(?:-|$)/, score: 36 },
+  { pattern: /^deepseek-v4-flash-vision(?:-|$)/, score: 35 },
+  { pattern: /^gemini-3-1-pro(?:-|$)/, score: 30 },
+  { pattern: /^minimax-m3(?:-|$)/, score: 29 },
+]
+
+function canonicalModelName(modelName: string): string {
+  return modelName
+    .toLowerCase()
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/-thinking$/, '')
+    .replace(/(\d)\.(\d)/g, '$1-$2')
+}
+
+function intelligenceScore(modelName: string): number | null {
+  const name = canonicalModelName(modelName)
+  if (
+    /(^|[-_])mini($|[-_])/.test(name)
+    || name.includes('lite')
+    || name.includes('nano')
+    || name.includes('flash-lite')
+    || name.startsWith('glm-5-2-fast')
+  ) {
+    return null
+  }
+  return INTELLIGENCE_RULES.find((rule) => rule.pattern.test(name))?.score ?? null
+}
+
+function abilityRank(row: LeaderboardRow): number {
+  return intelligenceScore(row.name) ?? TIER_ABILITY_BASELINE[row.ability.tier]
+}
+
 export function collectLeaderboardModels(
   channels: LeaderboardChannel[],
   userRates: Record<number, number>,
@@ -126,7 +185,8 @@ export function describeModelAbility(modelName: string): ModelAbility {
   }
 
   const light = isLightModel(name)
-  const tier = resolveTier(name, light)
+  const score = intelligenceScore(modelName)
+  const tier = score != null && score >= 43 ? 'flagship' : resolveTier(name, light)
   const contextTokens = resolveContext(name)
   const features: AbilityFeature[] = []
   if (tier === 'flagship' || tier === 'strong' || name.includes('reason') || name.includes('think')) {
@@ -292,6 +352,8 @@ function compareRows(a: LeaderboardRow, b: LeaderboardRow, sort: LeaderboardSort
   if (sort === 'price') {
     return priceKey(a.best) - priceKey(b.best) || a.name.localeCompare(b.name)
   }
+  const abilityDifference = abilityRank(b) - abilityRank(a)
+  if (abilityDifference) return abilityDifference
   const tierDifference = TIER_RANK[a.ability.tier] - TIER_RANK[b.ability.tier]
   if (tierDifference) return tierDifference
   const contextDifference = (b.ability.contextTokens ?? -1) - (a.ability.contextTokens ?? -1)

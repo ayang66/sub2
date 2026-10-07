@@ -181,6 +181,7 @@ import {
   collectLeaderboardModels,
   formatContext,
   modelKind,
+  presentLeaderboard,
   type LeaderboardModelInput,
   type LeaderboardQuote,
   type LeaderboardRow,
@@ -204,13 +205,17 @@ const platformOptions = computed(() =>
 
 const visibleRows = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
+  const hasFilter = Boolean(query || platformFilter.value || kindFilter.value)
   const filtered = sourceModels.value.filter((model) => {
     if (platformFilter.value && model.platform !== platformFilter.value) return false
     if (kindFilter.value && modelKind(model.name) !== kindFilter.value) return false
     if (!query) return true
     return model.name.toLowerCase().includes(query) || displayModelName(model.name).toLowerCase().includes(query)
   })
-  return buildLeaderboard(filtered, sort.value)
+  return presentLeaderboard(buildLeaderboard(filtered, sort.value), {
+    sort: sort.value,
+    filtered: hasFilter,
+  })
 })
 
 async function loadLeaderboard() {

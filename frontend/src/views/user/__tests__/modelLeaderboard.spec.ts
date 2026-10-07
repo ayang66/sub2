@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import type { UserAvailableGroup, UserSupportedModelPricing } from '@/api/channels'
-import { buildLeaderboard, collectLeaderboardModels, describeModelAbility, formatContext } from '../modelLeaderboard'
+import {
+  buildLeaderboard,
+  collectLeaderboardModels,
+  describeModelAbility,
+  formatContext,
+  presentLeaderboard,
+  selectFeaturedLeaderboard,
+} from '../modelLeaderboard'
 
 function group(id: number, name: string, rate: number, extra: Partial<UserAvailableGroup> = {}): UserAvailableGroup {
   return {
@@ -158,5 +165,78 @@ describe('model leaderboard', () => {
     expect(models).toHaveLength(1)
     expect(models[0].offers).toHaveLength(1)
     expect(models[0].offers[0].rate).toBe(0.08)
+  })
+
+  it('keeps the ability list to ten models while reserving one model per brand', () => {
+    const offer = (rate: number) => [{ group: group(1, 'Default', rate), rate, pricing: tokenPricing }]
+    const models = [
+      'claude-opus-5.5',
+      'claude-sonnet-5.5',
+      'claude-fable-5.1',
+      'gpt-6-astra',
+      'gpt-6.1-sol',
+      'grok-4.7',
+      'glm-5.3',
+      'qwen3.8-max',
+      'kimi-k3',
+      'claude-haiku-5.5',
+      'gemini-3.8-flash',
+      'deepseek-v4.1-flash',
+      'minimax-m3',
+    ].map((name) => ({ name, platform: 'mixed', offers: offer(0.1) }))
+    const ranked = buildLeaderboard(models, 'ability')
+    const featured = selectFeaturedLeaderboard(ranked)
+
+    expect(ranked.map((row) => row.name).slice(0, 10)).not.toContain('gemini-3.8-flash')
+    expect(featured.map((row) => row.name)).toEqual([
+      'claude-opus-5.5',
+      'claude-sonnet-5.5',
+      'gpt-6-astra',
+      'grok-4.7',
+      'glm-5.3',
+      'qwen3.8-max',
+      'kimi-k3',
+      'gemini-3.8-flash',
+      'deepseek-v4.1-flash',
+      'minimax-m3',
+    ])
+  })
+
+  it('keeps only the strongest brand representatives when there are more brands than slots', () => {
+    const offer = (rate: number) => [{ group: group(1, 'Default', rate), rate, pricing: tokenPricing }]
+    const rows = buildLeaderboard([
+      { name: 'claude-opus-5.5', platform: 'anthropic', offers: offer(0.1) },
+      { name: 'claude-sonnet-5.5', platform: 'anthropic', offers: offer(0.1) },
+      { name: 'claude-fable-5.1', platform: 'anthropic', offers: offer(0.1) },
+      { name: 'gpt-6-astra', platform: 'openai', offers: offer(0.1) },
+      { name: 'grok-4.7', platform: 'grok', offers: offer(0.1) },
+      { name: 'gemini-3.8-flash', platform: 'gemini', offers: offer(0.1) },
+    ], 'ability')
+
+    expect(selectFeaturedLeaderboard(rows, 3).map((row) => row.name)).toEqual([
+      'claude-opus-5.5',
+      'gpt-6-astra',
+      'grok-4.7',
+    ])
+  })
+
+  it('does not hide matches when the user searches or changes the ranking', () => {
+    const offer = (rate: number) => [{ group: group(1, 'Default', rate), rate, pricing: tokenPricing }]
+    const rows = buildLeaderboard(
+      ['claude-opus-5.5', 'claude-sonnet-5.5', 'gpt-6-astra', 'grok-4.7', 'gemini-3.8-flash'].map((name) => ({
+        name,
+        platform: 'mixed',
+        offers: offer(0.1),
+      })),
+      'ability',
+    )
+
+    expect(presentLeaderboard(rows, { sort: 'ability', filtered: true, limit: 3 })).toHaveLength(rows.length)
+    expect(presentLeaderboard(rows, { sort: 'price', filtered: false, limit: 3 })).toHaveLength(rows.length)
+    expect(presentLeaderboard(rows, { sort: 'ability', filtered: false, limit: 3 }).map((row) => row.name)).toEqual([
+      'claude-opus-5.5',
+      'gpt-6-astra',
+      'grok-4.7',
+    ])
   })
 })

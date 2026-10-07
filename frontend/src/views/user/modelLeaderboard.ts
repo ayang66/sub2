@@ -173,6 +173,65 @@ export function buildLeaderboard(models: LeaderboardModelInput[], sort: Leaderbo
     .sort((a, b) => compareRows(a, b, sort))
 }
 
+export const FEATURED_LEADERBOARD_LIMIT = 10
+
+export function modelBrand(modelName: string): string | null {
+  const name = canonicalModelName(modelName)
+  if (name.includes('claude')) return 'anthropic'
+  if (name.includes('minimax')) return 'minimax'
+  if (name.includes('gemini') || name.includes('imagen') || name.includes('veo')) return 'google'
+  if (name.includes('deepseek')) return 'deepseek'
+  if (name.includes('qwen')) return 'qwen'
+  if (name.includes('grok')) return 'xai'
+  if (name.includes('kimi') || name.includes('moonshot')) return 'moonshot'
+  if (name.startsWith('glm') || /(^|[-_])glm($|[-_])/.test(name)) return 'zhipu'
+  if (
+    name.startsWith('gpt')
+    || name.startsWith('chatgpt')
+    || name.includes('openai')
+    || name.includes('codex')
+    || name.includes('dall-e')
+    || name.includes('sora')
+    || /(^|[-_])o[134]($|[-_])/.test(name)
+  ) {
+    return 'openai'
+  }
+  return null
+}
+
+export function selectFeaturedLeaderboard(
+  rows: LeaderboardRow[],
+  limit = FEATURED_LEADERBOARD_LIMIT,
+): LeaderboardRow[] {
+  if (rows.length <= limit) return rows
+  const representatives: LeaderboardRow[] = []
+  const seenBrands = new Set<string>()
+  for (const row of rows) {
+    const brand = modelBrand(row.name)
+    if (!brand || seenBrands.has(brand)) continue
+    seenBrands.add(brand)
+    representatives.push(row)
+  }
+  const selected = new Set<LeaderboardRow>(
+    representatives.length >= limit ? representatives.slice(0, limit) : representatives,
+  )
+  if (selected.size < limit) {
+    for (const row of rows) {
+      selected.add(row)
+      if (selected.size >= limit) break
+    }
+  }
+  return rows.filter((row) => selected.has(row))
+}
+
+export function presentLeaderboard(
+  rows: LeaderboardRow[],
+  options: { sort: LeaderboardSort; filtered: boolean; limit?: number },
+): LeaderboardRow[] {
+  if (options.filtered || options.sort !== 'ability') return rows
+  return selectFeaturedLeaderboard(rows, options.limit)
+}
+
 export function describeModelAbility(modelName: string): ModelAbility {
   const name = modelName.toLowerCase()
   const kind = modelKind(name)

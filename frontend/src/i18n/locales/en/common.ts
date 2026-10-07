@@ -170,7 +170,6 @@ export default {
     groups: 'Groups',
     channels: 'Channels',
     modelMarketplace: 'Model Marketplace',
-    modelLeaderboard: 'Model Leaderboard',
     availableChannels: 'Available Channels',
     subscriptions: 'Subscriptions',
     accounts: 'Accounts',

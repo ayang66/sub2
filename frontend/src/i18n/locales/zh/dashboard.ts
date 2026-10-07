@@ -578,57 +578,6 @@ export default {
     }
   },
 
-  modelLeaderboard: {
-    title: '模型排行榜',
-    description: '对照模型能力和各分组实付价格',
-    searchPlaceholder: '搜索模型名称',
-    allPlatforms: '全部平台',
-    allTypes: '全部类型',
-    sortAbility: '按能力',
-    sortPrice: '按价格',
-    empty: '没有匹配的模型',
-    loadFailed: '加载模型排行榜失败',
-    columns: {
-      rank: '排名',
-      model: '模型',
-      ability: '能力',
-      context: '上下文',
-      input: '输入价格',
-      output: '输出价格',
-      group: '最低价分组'
-    },
-    tiers: {
-      flagship: '旗舰',
-      strong: '强',
-      balanced: '均衡',
-      light: '轻量',
-      media: '多媒体'
-    },
-    features: {
-      reasoning: '推理',
-      code: '代码',
-      longContext: '长上下文',
-      vision: '视觉',
-      image: '生图',
-      video: '视频'
-    },
-    types: {
-      chat: '对话',
-      image: '生图',
-      video: '视频'
-    },
-    units: {
-      tokens: '/ 1M',
-      image: '/ 张',
-      request: '/ 次',
-      video: '/ 次'
-    },
-    tiered: '阶梯价',
-    moreGroups: '另有 {count} 个分组',
-    noPrice: '未定价',
-    contextUnknown: '-'
-  },
-
   affiliate: {
     title: '邀请返利',
     description: '邀请新用户注册，并将返利额度转入账户余额',

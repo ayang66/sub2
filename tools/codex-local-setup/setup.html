@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 一键配置</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; background: #f4f7f7; color: #173b3b; }
+    main { box-sizing: border-box; width: min(680px, 100%); margin: 0 auto; padding: 48px 20px; }
+    .panel { background: white; border: 1px solid #d7e4e2; border-radius: 12px; box-shadow: 0 12px 35px #173b3b12; overflow: hidden; }
+    header { padding: 26px 30px 22px; border-bottom: 1px solid #e5eeec; }
+    h1 { margin: 0; font-size: 24px; letter-spacing: 0; }
+    header p { margin: 8px 0 0; color: #557170; line-height: 1.6; }
+    form { padding: 30px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    input { box-sizing: border-box; width: 100%; height: 46px; padding: 0 13px; border: 1px solid #c7d9d6; border-radius: 7px; font-size: 16px; color: #173b3b; }
+    input:focus { outline: 3px solid #9fe5d9; border-color: #2eb7a5; }
+    .model { margin-top: 21px; padding: 13px; border: 1px solid #d7e4e2; border-radius: 7px; background: #f7faf9; }
+    .model strong { display: block; margin-top: 5px; font-size: 16px; }
+    .model small { color: #557170; }
+    button { margin-top: 26px; width: 100%; height: 46px; border: 0; border-radius: 7px; background: #2eb7a5; color: white; font-size: 15px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #229c8c; }
+    button:disabled { opacity: .65; cursor: wait; }
+    #status { min-height: 24px; margin: 16px 0 0; line-height: 1.6; color: #557170; }
+    #status.error { color: #b42318; }
+    #status.success { color: #087443; }
+    .note { padding: 0 30px 28px; color: #6b817f; font-size: 13px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <header>
+        <h1>Codex 一键配置</h1>
+        <p>API Key 只在本机处理，不会上传到网站服务器。</p>
+      </header>
+      <form id="setup-form">
+        <label for="api-key">中转站 API Key</label>
+        <input id="api-key" name="api-key" type="password" placeholder="sk-..." autocomplete="off" required>
+        <label for="model" style="margin-top:21px">模型名称</label>
+        <input id="model" name="model" type="text" value="gpt-6-astra" autocomplete="off" required>
+        <div class="model">
+          配置模板
+          <strong>网站教程模板</strong>
+          <small>接口地址已内置为 brookeapi.cloud</small>
+        </div>
+        <button id="submit" type="submit">一键配置并重启 Codex</button>
+        <div id="status" role="status" aria-live="polite"></div>
+      </form>
+      <div class="note">配置前会自动备份已有的 auth.json 和 config.toml。若未检测到 Codex 命令，请按提示手动重新打开 Codex。</div>
+    </section>
+  </main>
+  <script>
+    const form = document.getElementById('setup-form');
+    const key = document.getElementById('api-key');
+    const model = document.getElementById('model');
+    const button = document.getElementById('submit');
+    const status = document.getElementById('status');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const apiKey = key.value.trim();
+      const modelName = model.value.trim();
+      if (!apiKey || !modelName) return;
+      button.disabled = true;
+      status.className = '';
+      status.textContent = '正在备份并写入 Codex 配置...';
+      try {
+        const response = await fetch('/v1/configure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_key: apiKey, base_url: 'https://brookeapi.cloud/v1', model: modelName, reasoning_effort: 'xhigh', restart: true })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.ok) throw new Error(result.message || '配置失败，请检查 API Key');
+        status.className = 'success';
+        status.textContent = '配置完成，旧配置已备份。' + (result.warnings && result.warnings[0] ? ' ' + result.warnings[0] : '');
+        key.value = '';
+      } catch (error) {
+        status.className = 'error';
+        status.textContent = error.message || '配置失败，请重试';
+      } finally {
+        button.disabled = false;
+      }
+    });
+    key.focus();
+  </script>
+</body>
+</html>

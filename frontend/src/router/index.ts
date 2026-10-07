@@ -299,18 +299,6 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/model-leaderboard',
-    name: 'ModelLeaderboard',
-    component: () => import('@/views/user/ModelLeaderboardView.vue'),
-    meta: {
-      requiresAuth: true,
-      requiresAdmin: false,
-      title: 'Model Leaderboard',
-      titleKey: 'modelLeaderboard.title',
-      descriptionKey: 'modelLeaderboard.description'
-    }
-  },
-  {
     path: '/model-marketplace',
     name: 'ModelMarketplace',
     component: () => import('@/views/user/ModelMarketplaceView.vue'),

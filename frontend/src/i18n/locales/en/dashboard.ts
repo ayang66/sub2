@@ -573,57 +573,6 @@ export default {
     }
   },
 
-  modelLeaderboard: {
-    title: 'Model Leaderboard',
-    description: 'Compare model capabilities with each group\'s effective price',
-    searchPlaceholder: 'Search model names',
-    allPlatforms: 'All Platforms',
-    allTypes: 'All Types',
-    sortAbility: 'By capability',
-    sortPrice: 'By price',
-    empty: 'No matching models',
-    loadFailed: 'Failed to load the model leaderboard',
-    columns: {
-      rank: 'Rank',
-      model: 'Model',
-      ability: 'Capability',
-      context: 'Context',
-      input: 'Input price',
-      output: 'Output price',
-      group: 'Lowest-price group'
-    },
-    tiers: {
-      flagship: 'Flagship',
-      strong: 'Strong',
-      balanced: 'Balanced',
-      light: 'Light',
-      media: 'Media'
-    },
-    features: {
-      reasoning: 'Reasoning',
-      code: 'Code',
-      longContext: 'Long context',
-      vision: 'Vision',
-      image: 'Image',
-      video: 'Video'
-    },
-    types: {
-      chat: 'Chat',
-      image: 'Image',
-      video: 'Video'
-    },
-    units: {
-      tokens: '/ 1M',
-      image: '/ image',
-      request: '/ request',
-      video: '/ video'
-    },
-    tiered: 'Tiered',
-    moreGroups: '{count} more groups',
-    noPrice: 'No price',
-    contextUnknown: '-'
-  },
-
   affiliate: {
     title: 'Affiliate Rebates',
     description: 'Invite new users and convert your rebate quota into account balance',

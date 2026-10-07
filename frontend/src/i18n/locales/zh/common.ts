@@ -170,6 +170,7 @@ export default {
     groups: '分组管理',
     channels: '渠道管理',
     modelMarketplace: '模型广场',
+    modelLeaderboard: '模型排行榜',
     availableChannels: '可用渠道',
     subscriptions: '订阅管理',
     accounts: '账号管理',

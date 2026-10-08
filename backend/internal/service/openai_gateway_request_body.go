@@ -1138,6 +1138,12 @@ func normalizeOpenAIResponsesWebSocketCompatibilityBody(body []byte, account *Ac
 			normalized = next
 			changed = true
 		}
+		webSearchBody, webSearchChanged, err := ensureOpenAIOAuthWebSearchToolForHistoryBody(normalized)
+		if err != nil {
+			return body, false, fmt.Errorf("normalize websocket body: %w", err)
+		}
+		normalized = webSearchBody
+		changed = changed || webSearchChanged
 	}
 	needsOrphanCleanup := account != nil && account.IsOpenAIOAuthLike() &&
 		gjson.GetBytes(normalized, "input").IsArray()
@@ -1270,6 +1276,15 @@ func normalizeOpenAIPassthroughOAuthBody(body []byte, compact bool) ([]byte, boo
 			normalized = next
 			changed = true
 		}
+	}
+
+	if !compact {
+		webSearchBody, webSearchChanged, err := ensureOpenAIOAuthWebSearchToolForHistoryBody(normalized)
+		if err != nil {
+			return body, false, fmt.Errorf("normalize passthrough body: %w", err)
+		}
+		normalized = webSearchBody
+		changed = changed || webSearchChanged
 	}
 
 	if compact {

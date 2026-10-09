@@ -60,12 +60,16 @@ func TestForward_OAuthWebSearchHistoryDeclaresTool(t *testing.T) {
 				tools := gjson.GetBytes(forwarded, "tools").Array()
 				require.Len(t, tools, 1)
 				require.Equal(t, "web_search", tools[0].Get("type").String())
+				require.True(t, tools[0].Get("external_web_access").Exists())
+				require.False(t, tools[0].Get("external_web_access").Bool())
 				return
 			}
 			require.False(t, gjsonToolsContainWebSearch(gjson.GetBytes(forwarded, "tools")))
 			additional := items[len(items)-2]
 			require.Equal(t, "additional_tools", additional.Get("type").String())
 			require.Equal(t, "web_search", additional.Get("tools.0.type").String())
+			require.True(t, additional.Get("tools.0.external_web_access").Exists())
+			require.False(t, additional.Get("tools.0.external_web_access").Bool())
 		})
 	}
 }

@@ -88,6 +88,7 @@ func ensureOpenAIOAuthWebSearchToolForHistory(reqBody map[string]any, responsesL
 	hasWebSearchCall := false
 	callerDeclaredTools := false
 	additionalToolsIndex := -1
+	var additionalToolsItem map[string]any
 	itemTypes := make([]string, len(input))
 	for i, rawItem := range input {
 		item, ok := rawItem.(map[string]any)
@@ -107,6 +108,7 @@ func ensureOpenAIOAuthWebSearchToolForHistory(reqBody map[string]any, responsesL
 			}
 			if additionalToolsIndex < 0 {
 				additionalToolsIndex = i
+				additionalToolsItem = item
 			}
 		}
 	}
@@ -120,9 +122,8 @@ func ensureOpenAIOAuthWebSearchToolForHistory(reqBody map[string]any, responsesL
 	case !responsesLite:
 		reqBody["tools"] = append(tools, cloneOpenAIWebSearchHistoryTool())
 	case additionalToolsIndex >= 0:
-		item := input[additionalToolsIndex].(map[string]any)
-		existing, _ := item["tools"].([]any)
-		item["tools"] = append(existing, cloneOpenAIWebSearchHistoryTool())
+		existing, _ := additionalToolsItem["tools"].([]any)
+		additionalToolsItem["tools"] = append(existing, cloneOpenAIWebSearchHistoryTool())
 	default:
 		at := openAIAdditionalToolsInsertIndex(itemTypes)
 		additional := map[string]any{

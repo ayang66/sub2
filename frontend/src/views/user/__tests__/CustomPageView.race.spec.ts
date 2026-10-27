@@ -81,16 +81,19 @@ describe('custom Markdown page request ordering', () => {
     expect(wrapper.get('.markdown-page-content h1').text()).toBe('New page')
   })
 
-  it('shows an embedded page immediately after leaving a pending Markdown page', async () => {
+  it('shows an external page link immediately after leaving a pending Markdown page', async () => {
     const old = deferred<Response>()
     fetchPage.mockReturnValueOnce(old.promise)
     const wrapper = mountPage()
     route.params.id = 'external'
     await nextTick()
-    expect(wrapper.get('iframe').attributes('src')).toContain('https://example.com/docs')
+    const link = wrapper.get('.custom-embed-shell a')
+    expect(link.attributes('href')).toContain('https://example.com/docs')
+    expect(link.attributes('target')).toBe('_self')
+    expect(wrapper.find('iframe').exists()).toBe(false)
     old.resolve(response('# Old page'))
     await flushPromises()
     expect(wrapper.find('.markdown-page-content').exists()).toBe(false)
-    expect(wrapper.get('iframe').attributes('src')).toContain('https://example.com/docs')
+    expect(wrapper.get('.custom-embed-shell a').attributes('href')).toContain('https://example.com/docs')
   })
 })

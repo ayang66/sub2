@@ -69,11 +69,13 @@ describe('model leaderboard', () => {
     const offer = (rate: number) => [{ group: group(1, 'Default', rate), rate, pricing: tokenPricing }]
     const rows = buildLeaderboard([
       { name: 'claude-haiku-4-5', platform: 'anthropic', offers: offer(0.02) },
+      { name: 'gemini-3.1-pro-high', platform: 'gemini', offers: offer(0.1) },
       { name: 'glm-5.3-flash', platform: 'zhipu', offers: offer(0.1) },
       { name: 'kimi-k3', platform: 'moonshot', offers: offer(0.1) },
       { name: 'glm-5.3', platform: 'zhipu', offers: offer(0.1) },
       { name: 'grok-4.7', platform: 'grok', offers: offer(0.1) },
       { name: 'gpt-6.1-sol', platform: 'openai', offers: offer(0.1) },
+      { name: 'gemini-4-argon', platform: 'gemini', offers: offer(0.1) },
       { name: 'claude-fable-5.1', platform: 'anthropic', offers: offer(0.2) },
       { name: 'gpt-6-astra', platform: 'openai', offers: offer(0.1) },
       { name: 'claude-sonnet-5.5', platform: 'anthropic', offers: offer(0.1) },
@@ -83,15 +85,18 @@ describe('model leaderboard', () => {
     expect(rows.map((row) => row.name)).toEqual([
       'claude-opus-5.5',
       'claude-sonnet-5.5',
-      'gpt-6-astra',
       'claude-fable-5.1',
+      'gpt-6-astra',
+      'gemini-4-argon',
       'gpt-6.1-sol',
       'grok-4.7',
       'glm-5.3',
       'kimi-k3',
       'glm-5.3-flash',
+      'gemini-3.1-pro-high',
       'claude-haiku-4-5',
     ])
+    expect(rows[0].name).not.toMatch(/gemini/)
     expect(describeModelAbility('claude-opus-5.5').tier).toBe('flagship')
     expect(describeModelAbility('glm-5.3').tier).toBe('flagship')
     expect(describeModelAbility('glm-5.3-flash').tier).not.toBe('flagship')
@@ -193,11 +198,11 @@ describe('model leaderboard', () => {
       'claude-sonnet-5.5',
       'gpt-6-astra',
       'grok-4.7',
-      'glm-5.3',
       'qwen3.8-max',
+      'deepseek-v4.1-flash',
+      'glm-5.3',
       'kimi-k3',
       'gemini-3.8-flash',
-      'deepseek-v4.1-flash',
       'minimax-m3',
     ])
   })

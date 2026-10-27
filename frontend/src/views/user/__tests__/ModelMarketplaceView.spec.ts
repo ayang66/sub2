@@ -150,7 +150,7 @@ function mountView() {
 }
 
 describe('ModelMarketplaceView filters', () => {
-  it('pins GPT models and marks Codex Plus as recommended', async () => {
+  it('pins GPT models without marking a group as recommended', async () => {
     const wrapper = mountView()
     await flushPromises()
 
@@ -158,7 +158,7 @@ describe('ModelMarketplaceView filters', () => {
     expect(cards[0].attributes('data-model')).toBe('gpt-5.5')
     expect(cards[1].attributes('data-model')).toBe('gpt-5.6')
     expect(cards.at(-1)?.attributes('data-model')).toBe('deepseek-v4-pro')
-    expect(wrapper.get('[data-test="recommended-offer"]').text()).toBe('modelMarketplace.recommended')
+    expect(wrapper.find('[data-test="recommended-offer"]').exists()).toBe(false)
   })
 
   it('removes offers from other groups when a group is selected', async () => {

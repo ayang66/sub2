@@ -103,13 +103,6 @@
                     x{{ formatRate(offer.effectiveRate) }}
                   </span>
                   <span
-                    v-if="isRecommendedOffer(offer)"
-                    class="rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-700/60 dark:bg-amber-900/20 dark:text-amber-300"
-                    data-test="recommended-offer"
-                  >
-                    {{ t('modelMarketplace.recommended') }}
-                  </span>
-                  <span
                     v-if="hasTimePricing(offer)"
                     class="rounded-md border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[11px] font-medium text-orange-700 dark:border-orange-700/60 dark:bg-orange-900/20 dark:text-orange-300"
                     :title="timePricingSummary(offer)"
@@ -445,10 +438,6 @@ function compareMarketplaceModels(a: MarketModel, b: MarketModel): number {
 function marketplaceModelRank(model: string): number {
   const value = model.toLowerCase()
   return value.startsWith('gpt-') || value.startsWith('codex-') ? 0 : 1
-}
-
-function isRecommendedOffer(offer: MarketOffer): boolean {
-  return offer.group.name === 'Codex Plus'
 }
 
 function hasTimePricing(offer: MarketOffer): boolean {

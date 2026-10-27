@@ -67,9 +67,10 @@ const TIER_RANK: Record<AbilityTier, number> = {
   media: 4,
 }
 
-// Artificial Analysis Intelligence Index integers, highest published reasoning setting.
-// Captured 2026-10-08 from https://artificialanalysis.ai/leaderboards/models.
-// Only scores present on that leaderboard are listed. Unlisted models keep a tier baseline.
+// Artificial Analysis Intelligence Index, highest published reasoning setting.
+// Captured 2026-10-20 from https://artificialanalysis.ai/leaderboards/models.
+// Only scores present on that leaderboard are listed. Unlisted models keep a tier baseline,
+// which stays below every scored flagship so context length cannot put Gemini first.
 const TIER_ABILITY_BASELINE: Record<AbilityTier, number> = {
   flagship: 21,
   strong: 14,
@@ -79,25 +80,26 @@ const TIER_ABILITY_BASELINE: Record<AbilityTier, number> = {
 }
 
 const INTELLIGENCE_RULES: Array<{ pattern: RegExp; score: number }> = [
-  { pattern: /^claude-opus-5-5(?:-|$)/, score: 58 },
+  { pattern: /^claude-opus-5-5(?:-|$)/, score: 57.62 },
   { pattern: /^claude-sonnet-5-5(?:-|$)/, score: 56 },
-  { pattern: /^claude-fable-5-1(?:-|$)/, score: 53 },
-  { pattern: /^gpt-6-astra(?:-|$)/, score: 53 },
-  { pattern: /^gpt-6-1-sol(?:-|$)/, score: 52 },
-  { pattern: /^grok-4-7(?:-|$)/, score: 46 },
-  { pattern: /^qwen3-8-max(?:-|$)/, score: 45 },
-  { pattern: /^glm-5-3-flash(?:-|$)/, score: 42 },
-  { pattern: /^glm-5-3$/, score: 45 },
-  { pattern: /^kimi-k3(?:-|$)/, score: 44 },
-  { pattern: /^claude-haiku-5-5(?:-|$)/, score: 43 },
-  { pattern: /^gpt-5-6-terra(?:-|$)/, score: 42 },
-  { pattern: /^gemini-3-8-flash(?:-|$)/, score: 41 },
-  { pattern: /^gpt-6-luna(?:-|$)/, score: 38 },
-  { pattern: /^deepseek-v4-1-flash(?:-|$)/, score: 39 },
-  { pattern: /^deepseek-v4-pro-0813(?:-|$)/, score: 36 },
-  { pattern: /^deepseek-v4-flash-vision(?:-|$)/, score: 35 },
-  { pattern: /^gemini-3-1-pro(?:-|$)/, score: 30 },
-  { pattern: /^minimax-m3(?:-|$)/, score: 29 },
+  { pattern: /^claude-fable-5-1(?:-|$)/, score: 53.35 },
+  { pattern: /^gpt-6-astra(?:-|$)/, score: 52.67 },
+  { pattern: /^gemini-4(?:-0)?-argon(?:-|$)/, score: 52.56 },
+  { pattern: /^gpt-6-1-sol(?:-|$)/, score: 51.83 },
+  { pattern: /^grok-4-7(?:-|$)/, score: 46.45 },
+  { pattern: /^qwen3-8-max(?:-|$)/, score: 45.42 },
+  { pattern: /^deepseek-v4-1-flash(?:-|$)/, score: 45.1 },
+  { pattern: /^glm-5-3-flash(?:-|$)/, score: 41.81 },
+  { pattern: /^glm-5-3$/, score: 44.78 },
+  { pattern: /^kimi-k3(?:-|$)/, score: 43.59 },
+  { pattern: /^claude-haiku-5-5(?:-|$)/, score: 43.4 },
+  { pattern: /^gpt-5-6-terra(?:-|$)/, score: 42.08 },
+  { pattern: /^gemini-3-8-flash(?:-|$)/, score: 40.93 },
+  { pattern: /^gpt-6-luna(?:-|$)/, score: 38.12 },
+  { pattern: /^deepseek-v4-pro(?:-0813)?$/, score: 36 },
+  { pattern: /^deepseek-v4-flash-vision(?:-|$)/, score: 34.84 },
+  { pattern: /^gemini-3-1-pro(?:-|$)/, score: 29.72 },
+  { pattern: /^minimax-m3(?:-|$)/, score: 29.22 },
 ]
 
 function canonicalModelName(modelName: string): string {
